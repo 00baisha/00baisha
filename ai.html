@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI 专区 - 白鲨工具站</title>
+  <meta name="description" content="白鲨工具站 AI 专区：精选 AI 对话、写作、绘图、视频、编程、办公工具推荐，帮助你快速上手 AI。">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦈</text></svg>">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <main class="page">
+    <div class="ai-hero">
+      <h1>AI 专区</h1>
+      <p>精选当下好用、免费优先的 AI 工具，按用途分类。AI 时代，会用工具就是生产力。</p>
+    </div>
+    <div id="ai-groups"></div>
+  </main>
+
+  <script src="assets/js/common.js"></script>
+  <script src="assets/js/site.js"></script>
+  <script>
+    (function () {
+      BS_UI.fetchJSON('assets/data/ai-tools.json').then(function (groups) {
+        window.BS_DATA.ai = groups;
+        BS_UI.renderAI(document.getElementById('ai-groups'), groups);
+      });
+    })();
+  </script>
+</body>
+</html>

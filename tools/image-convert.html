@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>图片格式转换 - 白鲨工具站</title>
+  <meta name="description" content="在线图片格式转换工具：PNG、JPG、WebP、BMP 互相转换，支持调节质量。图片本地处理，不上传。">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦈</text></svg>">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <main class="tool-main">
+    <div class="tool-breadcrumb"></div>
+    <div class="tool-head">
+      <h1>🖼️ 图片格式转换</h1>
+      <p class="tool-desc">PNG / JPG / WebP / BMP 格式互转。图片在本地浏览器转换，不会上传。</p>
+    </div>
+
+    <div class="panel">
+      <div class="file-drop" id="drop">
+        <div class="fd-icon">🖼️</div>
+        <div class="fd-hint">点击选择图片，或直接拖进来</div>
+        <input type="file" id="file" accept="image/*">
+      </div>
+      <div class="form-grid" style="margin-top:16px">
+        <div>
+          <label class="panel-label">转换为</label>
+          <select id="format" style="width:100%">
+            <option value="image/png">PNG（无损，通用）</option>
+            <option value="image/jpeg">JPG（体积小）</option>
+            <option value="image/webp">WebP（现代格式）</option>
+            <option value="image/bmp">BMP（位图）</option>
+          </select>
+        </div>
+        <div>
+          <label class="panel-label">质量（JPG/WebP 生效）</label>
+          <input type="range" id="quality" min="10" max="100" value="90" style="width:100%">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="btn-convert" disabled>🔄 转换并下载</button>
+        <button class="btn ghost" id="btn-reset">🔄 重新选择</button>
+      </div>
+      <div class="result-line" id="status"></div>
+    </div>
+
+    <div class="panel" id="result" style="display:none">
+      <label class="panel-label">转换预览</label>
+      <img class="preview-img" id="preview" alt="转换结果预览">
+    </div>
+  </main>
+
+  <script src="../assets/js/common.js"></script>
+  <script>
+    BS.injectBreadcrumb('图片格式转换');
+
+    var drop = document.getElementById('drop');
+    var fileInput = document.getElementById('file');
+    var formatEl = document.getElementById('format');
+    var qualityEl = document.getElementById('quality');
+    var convertBtn = document.getElementById('btn-convert');
+    var resultPanel = document.getElementById('result');
+    var preview = document.getElementById('preview');
+    var status = document.getElementById('status');
+
+    var current = null; // { dataUrl, name, size, type }
+
+    function fmtSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+
+    function loadFile(file) {
+      if (!file || !file.type.startsWith('image/')) { BS.toast('请选择图片文件'); return; }
+      var reader = new FileReader();
+      reader.onload = function () {
+        current = { dataUrl: reader.result, name: file.name, size: file.size, type: file.type };
+        convertBtn.disabled = false;
+        status.textContent = '✅ 已选择：' + file.name + '（' + fmtSize(file.size) + '）';
+        status.style.color = '#16a34a';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    convertBtn.addEventListener('click', function () {
+      if (!current) return;
+      var img = new Image();
+      img.onload = function () {
+        var canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        var ctx = canvas.getContext('2d');
+        // JPG 透明背景转白色，避免黑色块
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+        var fmt = formatEl.value;
+        var out = canvas.toDataURL(fmt, qualityEl.value / 100);
+        var ext = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/bmp': 'bmp' }[fmt];
+        var a = document.createElement('a');
+        var base = current.name.replace(/\.[^.]+$/, '');
+        a.href = out;
+        a.download = base + '.' + ext;
+        a.click();
+        preview.src = out;
+        resultPanel.style.display = 'block';
+        BS.toast('转换完成，已开始下载 ⬇️');
+      };
+      img.src = current.dataUrl;
+    });
+
+    drop.addEventListener('click', function () { fileInput.click(); });
+    drop.addEventListener('dragover', function (e) { e.preventDefault(); drop.classList.add('drag'); });
+    drop.addEventListener('dragleave', function () { drop.classList.remove('drag'); });
+    drop.addEventListener('drop', function (e) {
+      e.preventDefault(); drop.classList.remove('drag');
+      if (e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', function () { if (fileInput.files.length) loadFile(fileInput.files[0]); });
+    document.getElementById('btn-reset').addEventListener('click', function () {
+      current = null; convertBtn.disabled = true; resultPanel.style.display = 'none';
+      status.textContent = ''; fileInput.value = '';
+    });
+  </script>
+</body>
+</html>

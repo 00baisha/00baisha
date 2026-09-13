@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>二维码生成 - 白鲨工具站</title>
+  <meta name="description" content="在线二维码生成器：文本、链接一键生成二维码，支持中文、多种尺寸和容错级别，可下载 PNG 图片。">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦈</text></svg>">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <main class="tool-main">
+    <div class="tool-breadcrumb"></div>
+    <div class="tool-head">
+      <h1>📱 二维码生成</h1>
+      <p class="tool-desc">把文字、网址生成二维码，支持中文内容，可下载高清 PNG。生成过程完全在本地。</p>
+    </div>
+
+    <div class="panel">
+      <label class="panel-label">内容（网址 / 文字）</label>
+      <textarea id="content" class="input-area" style="min-height:100px" placeholder="输入网址或文字，例如：https://example.com"></textarea>
+      <div class="form-grid" style="margin-top:14px">
+        <div>
+          <label class="panel-label">尺寸</label>
+          <select id="size" style="width:100%">
+            <option value="200">小（200×200）</option>
+            <option value="300" selected>中（300×300）</option>
+            <option value="500">大（500×500）</option>
+            <option value="800">超大（800×800）</option>
+          </select>
+        </div>
+        <div>
+          <label class="panel-label">容错级别</label>
+          <select id="level" style="width:100%">
+            <option value="L">L（7%，二维码大一些）</option>
+            <option value="M" selected>M（15%，推荐）</option>
+            <option value="Q">Q（25%）</option>
+            <option value="H">H（30%，遮挡也能扫）</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="btn-gen">✨ 生成二维码</button>
+        <button class="btn ghost" id="btn-download" disabled>⬇️ 下载 PNG</button>
+      </div>
+      <div class="result-line" id="status"></div>
+    </div>
+
+    <div class="panel" id="result" style="display:none;text-align:center">
+      <label class="panel-label">生成的二维码</label>
+      <div style="display:inline-block;padding:14px;background:#fff;border-radius:10px;border:1px solid var(--border)">
+        <img id="qr-img" alt="二维码" style="display:block;max-width:100%">
+      </div>
+      <div class="result-line">用手机扫码即可打开内容</div>
+    </div>
+  </main>
+
+  <script src="../assets/js/common.js"></script>
+  <script src="../assets/vendor/qrcode.js"></script>
+  <script src="../assets/vendor/qrcode-utf8.js"></script>
+  <script>
+    BS.injectBreadcrumb('二维码生成');
+
+    var contentEl = document.getElementById('content');
+    var sizeEl = document.getElementById('size');
+    var levelEl = document.getElementById('level');
+    var qrImg = document.getElementById('qr-img');
+    var resultPanel = document.getElementById('result');
+    var downloadBtn = document.getElementById('btn-download');
+    var status = document.getElementById('status');
+
+    function generate() {
+      var text = contentEl.value.trim();
+      if (!text) { BS.toast('请输入内容'); return; }
+      try {
+        var typeNumber = 0; // 自动
+        var qr = qrcode(typeNumber, levelEl.value);
+        qr.addData(text, 'Byte');
+        qr.make();
+        var size = parseInt(sizeEl.value, 10);
+        var cell = Math.floor(size / qr.getModuleCount());
+        cell = Math.max(cell, 2);
+        var pad = Math.floor((size - cell * qr.getModuleCount()) / 2);
+        var canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, size, size);
+        ctx.fillStyle = '#000000';
+        for (var r = 0; r < qr.getModuleCount(); r++) {
+          for (var c = 0; c < qr.getModuleCount(); c++) {
+            if (qr.isDark(r, c)) ctx.fillRect(c * cell + pad, r * cell + pad, cell, cell);
+          }
+        }
+        qrImg.src = canvas.toDataURL('image/png');
+        qrImg.width = Math.min(size, 320);
+        resultPanel.style.display = 'block';
+        downloadBtn.disabled = false;
+        status.textContent = '✅ 生成成功';
+        status.style.color = '#16a34a';
+      } catch (e) {
+        status.textContent = '❌ 生成失败：' + e.message;
+        status.style.color = '#ef4444';
+      }
+    }
+
+    document.getElementById('btn-gen').addEventListener('click', generate);
+    contentEl.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') generate();
+    });
+    downloadBtn.addEventListener('click', function () {
+      var a = document.createElement('a');
+      a.href = qrImg.src;
+      a.download = 'qrcode-' + Date.now() + '.png';
+      a.click();
+      BS.toast('开始下载 ⬇️');
+    });
+  </script>
+</body>
+</html>

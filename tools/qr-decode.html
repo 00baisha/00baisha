@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>二维码解码 - 白鲨工具站</title>
+  <meta name="description" content="在线二维码解码工具：上传二维码图片，立即识别出里面的文字或网址，支持中文。图片本地识别，不上传。">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦈</text></svg>">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <main class="tool-main">
+    <div class="tool-breadcrumb"></div>
+    <div class="tool-head">
+      <h1>📷 二维码解码</h1>
+      <p class="tool-desc">上传二维码图片（或截图粘贴），立即识别里面的内容。识别在本地完成，图片不会上传。</p>
+    </div>
+
+    <div class="panel">
+      <div class="file-drop" id="drop">
+        <div class="fd-icon">📷</div>
+        <div class="fd-hint">点击选择二维码图片，或直接拖进来（也支持截图后 Ctrl+V 粘贴）</div>
+        <input type="file" id="file" accept="image/*">
+      </div>
+      <div class="result-line" id="status"></div>
+    </div>
+
+    <div class="panel" id="result" style="display:none">
+      <label class="panel-label">识别结果</label>
+      <div class="result-box" id="output" style="font-family:inherit;font-size:15px"></div>
+      <div class="btn-row" id="result-actions" style="display:none">
+        <a class="btn" id="btn-open" href="#" target="_blank" rel="noopener" style="text-decoration:none">🌐 打开链接</a>
+        <button class="btn ghost" id="btn-copy">📋 复制内容</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="../assets/js/common.js"></script>
+  <script src="../assets/vendor/jsQR.js"></script>
+  <script>
+    BS.injectBreadcrumb('二维码解码');
+
+    var drop = document.getElementById('drop');
+    var fileInput = document.getElementById('file');
+    var statusEl = document.getElementById('status');
+    var resultPanel = document.getElementById('result');
+    var outputEl = document.getElementById('output');
+    var resultActions = document.getElementById('result-actions');
+    var openBtn = document.getElementById('btn-open');
+    var lastResult = '';
+
+    function decodeImage(img) {
+      var canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      try {
+        var imageData = ctx.getImageData(0, 0, img.width, img.height);
+      } catch (e) {
+        statusEl.textContent = '❌ 无法读取图片数据';
+        statusEl.style.color = '#ef4444';
+        return;
+      }
+      statusEl.textContent = '⏳ 正在识别…';
+      // 识别可能需要多尝试几次（原图 + 缩放 + 反色）
+      var attempts = [
+        { w: img.width, h: img.height, data: imageData.data },
+      ];
+      // 尝试放大提高识别率
+      if (img.width < 200) {
+        var big = document.createElement('canvas');
+        big.width = img.width * 3;
+        big.height = img.height * 3;
+        big.getContext('2d').drawImage(img, 0, 0, big.width, big.height);
+        var bigData = big.getContext('2d').getImageData(0, 0, big.width, big.height);
+        attempts.push({ w: big.width, h: big.height, data: bigData.data });
+      }
+      for (var i = 0; i < attempts.length; i++) {
+        var a = attempts[i];
+        var res = jsQR(a.data, a.w, a.h);
+        if (res && res.data) {
+          lastResult = res.data;
+          showResult(res.data);
+          return;
+        }
+      }
+      statusEl.textContent = '❌ 没识别到二维码。请确认图片清晰、二维码完整（试试换一张更清晰的图）';
+      statusEl.style.color = '#ef4444';
+      resultPanel.style.display = 'none';
+    }
+
+    function showResult(data) {
+      outputEl.textContent = data;
+      resultPanel.style.display = 'block';
+      var isUrl = /^https?:\/\//i.test(data);
+      resultActions.style.display = 'flex';
+      openBtn.style.display = isUrl ? 'inline-flex' : 'none';
+      openBtn.href = isUrl ? data : '#';
+      statusEl.textContent = '✅ 识别成功';
+      statusEl.style.color = '#16a34a';
+    }
+
+    function loadFile(file) {
+      if (!file || !file.type.startsWith('image/')) { BS.toast('请选择图片文件'); return; }
+      var reader = new FileReader();
+      reader.onload = function () {
+        var img = new Image();
+        img.onload = function () { decodeImage(img); };
+        img.onerror = function () { statusEl.textContent = '❌ 图片加载失败'; statusEl.style.color = '#ef4444'; };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    drop.addEventListener('click', function () { fileInput.click(); });
+    drop.addEventListener('dragover', function (e) { e.preventDefault(); drop.classList.add('drag'); });
+    drop.addEventListener('dragleave', function () { drop.classList.remove('drag'); });
+    drop.addEventListener('drop', function (e) {
+      e.preventDefault(); drop.classList.remove('drag');
+      if (e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', function () { if (fileInput.files.length) loadFile(fileInput.files[0]); });
+    // 支持 Ctrl+V 粘贴截图
+    document.addEventListener('paste', function (e) {
+      var items = e.clipboardData && e.clipboardData.items;
+      if (!items) return;
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].type.startsWith('image/')) {
+          var f = items[i].getAsFile();
+          if (f) loadFile(f);
+          return;
+        }
+      }
+    });
+    document.getElementById('btn-copy').addEventListener('click', function () {
+      if (!lastResult) return;
+      navigator.clipboard.writeText(lastResult).then(function () { BS.toast('内容已复制 📋'); });
+    });
+  </script>
+</body>
+</html>

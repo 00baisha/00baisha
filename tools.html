@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>全部工具 - 白鲨工具站</title>
+  <meta name="description" content="白鲨工具站全部在线工具：文本处理、图片处理、格式转换三大类，全部免费、本地运行、无需注册。">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦈</text></svg>">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <main class="page">
+    <h1 style="font-size:24px;font-weight:650;letter-spacing:-0.02em;margin-bottom:6px">全部工具</h1>
+    <p style="color:var(--text-2);font-size:14px;margin-bottom:20px">共 <span id="tool-count">0</span> 个工具，全部免费、浏览器本地运行</p>
+
+    <div class="cat-tabs">
+      <button class="cat-tab active" data-cat="all">全部</button>
+      <button class="cat-tab" data-cat="image">图片处理</button>
+      <button class="cat-tab" data-cat="convert">格式转换</button>
+      <button class="cat-tab" data-cat="video">视频工具</button>
+      <button class="cat-tab" data-cat="text">文本处理</button>
+    </div>
+
+    <div class="card-grid" id="tool-grid"></div>
+  </main>
+
+  <script src="assets/js/common.js"></script>
+  <script src="assets/js/site.js"></script>
+  <script>
+    (function () {
+      BS_UI.fetchJSON('assets/data/tools.json').then(function (tools) {
+        window.BS_DATA.tools = tools;
+        document.getElementById('tool-count').textContent = tools.length;
+        BS_UI.renderTools(document.getElementById('tool-grid'), tools);
+        BS_UI.attachCatTabs(tools);
+      });
+    })();
+  </script>
+</body>
+</html>

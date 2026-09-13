@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>文本对比 - 白鲨工具站</title>
+  <meta name="description" content="在线文本对比工具：对比两段文本的差异，高亮显示新增、删除、修改的内容，支持复制结果。">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦈</text></svg>">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <main class="tool-main">
+    <div class="tool-breadcrumb"></div>
+    <div class="tool-head">
+      <h1>🔀 文本对比</h1>
+      <p class="tool-desc">对比两段文本差异：<span style="background:#fee2e2;color:#b91c1c;padding:0 4px;border-radius:4px">删除</span>、<span style="background:#dcfce7;color:#15803d;padding:0 4px;border-radius:4px">新增</span>、普通行相同。逐行对比。</p>
+    </div>
+
+    <div class="panel">
+      <div class="form-grid">
+        <div>
+          <label class="panel-label">旧文本</label>
+          <textarea id="old" class="input-area" style="min-height:200px" placeholder="原始文本…"></textarea>
+        </div>
+        <div>
+          <label class="panel-label">新文本</label>
+          <textarea id="new" class="input-area" style="min-height:200px" placeholder="修改后的文本…"></textarea>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="btn-diff">🔀 对比</button>
+        <button class="btn ghost" id="btn-copy">📋 复制结果</button>
+        <button class="btn ghost" id="btn-swap">⇄ 交换左右</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <label class="panel-label">对比结果</label>
+      <div class="result-box" id="output" style="font-family:inherit;white-space:pre;font-size:13px;line-height:1.7;max-height:480px"></div>
+      <div class="result-line" id="status"></div>
+    </div>
+  </main>
+
+  <script src="../assets/js/common.js"></script>
+  <script>
+    BS.injectBreadcrumb('文本对比');
+
+    var oldEl = document.getElementById('old');
+    var newEl = document.getElementById('new');
+    var output = document.getElementById('output');
+    var status = document.getElementById('status');
+
+    function escapeHtml(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // 基于 LCS 的行级 diff
+    function diffLines(oldLines, newLines) {
+      var m = oldLines.length, n = newLines.length;
+      // DP 表
+      var dp = [];
+      for (var i = 0; i <= m; i++) { dp.push(new Array(n + 1).fill(0)); }
+      for (var i = m - 1; i >= 0; i--) {
+        for (var j = n - 1; j >= 0; j--) {
+          dp[i][j] = oldLines[i] === newLines[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+        }
+      }
+      // 回溯
+      var result = [];
+      var i = 0, j = 0;
+      while (i < m && j < n) {
+        if (oldLines[i] === newLines[j]) {
+          result.push({ type: 'same', text: oldLines[i] });
+          i++; j++;
+        } else if (dp[i + 1][j] >= dp[i][j + 1]) {
+          result.push({ type: 'del', text: oldLines[i] });
+          i++;
+        } else {
+          result.push({ type: 'add', text: newLines[j] });
+          j++;
+        }
+      }
+      while (i < m) { result.push({ type: 'del', text: oldLines[i] }); i++; }
+      while (j < n) { result.push({ type: 'add', text: newLines[j] }); j++; }
+      return result;
+    }
+
+    function doDiff() {
+      var oldText = oldEl.value.replace(/\r\n/g, '\n');
+      var newText = newEl.value.replace(/\r\n/g, '\n');
+      if (!oldText && !newText) { BS.toast('请先输入文本'); return; }
+      var result = diffLines(oldText.split('\n'), newText.split('\n'));
+      var add = 0, del = 0, same = 0;
+      var html = '';
+      result.forEach(function (line) {
+        if (line.type === 'add') { add++; html += '<span style="background:#dcfce7;color:#15803d;display:block">+ ' + escapeHtml(line.text) + '</span>'; }
+        else if (line.type === 'del') { del++; html += '<span style="background:#fee2e2;color:#b91c1c;display:block">- ' + escapeHtml(line.text) + '</span>'; }
+        else { same++; html += '<span style="color:var(--text-2);display:block">  ' + escapeHtml(line.text) + '</span>'; }
+      });
+      output.innerHTML = html;
+      status.textContent = '✅ 新增 ' + add + ' 行，删除 ' + del + ' 行，相同 ' + same + ' 行';
+      status.style.color = '';
+    }
+
+    document.getElementById('btn-diff').addEventListener('click', doDiff);
+    document.getElementById('btn-copy').addEventListener('click', function () {
+      if (!output.textContent) { BS.toast('没有可复制的内容'); return; }
+      var text = output.innerText;
+      navigator.clipboard.writeText(text).then(function () { BS.toast('已复制到剪贴板 📋'); });
+    });
+    document.getElementById('btn-swap').addEventListener('click', function () {
+      var t = oldEl.value; oldEl.value = newEl.value; newEl.value = t;
+      doDiff();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+[
+  {
+    "cat": "综合搜索",
+    "icon": "🔍",
+    "sites": [
+      { "name": "百度", "url": "https://www.baidu.com", "desc": "国内最大搜索引擎", "icon": "🔎" },
+      { "name": "必应", "url": "https://www.bing.com", "desc": "微软搜索引擎，无广告体验佳", "icon": "🔎" },
+      { "name": "夸克", "url": "https://www.quark.cn", "desc": "智能搜索，干净无广告", "icon": "🔎" },
+      { "name": "Google", "url": "https://www.google.com", "desc": "全球搜索引擎", "icon": "🔎" }
+    ]
+  },
+  {
+    "cat": "学习提升",
+    "icon": "📚",
+    "sites": [
+      { "name": "哔哩哔哩", "url": "https://www.bilibili.com", "desc": "视频学习网站，教程丰富", "icon": "📺" },
+      { "name": "知乎", "url": "https://www.zhihu.com", "desc": "高质量问答社区", "icon": "💬" },
+      { "name": "中国大学MOOC", "url": "https://www.icourse163.org", "desc": "名校公开课免费学", "icon": "🎓" },
+      { "name": "菜鸟教程", "url": "https://www.runoob.com", "desc": "编程入门教程", "icon": "🐦" },
+      { "name": "MDN Web Docs", "url": "https://developer.mozilla.org/zh-CN/", "desc": "Web 开发权威文档", "icon": "📖" },
+      { "name": "网易公开课", "url": "https://open.163.com", "desc": "国内外公开课视频", "icon": "🎬" }
+    ]
+  },
+  {
+    "cat": "开发工具",
+    "icon": "💻",
+    "sites": [
+      { "name": "GitHub", "url": "https://github.com", "desc": "全球最大代码托管平台", "icon": "🐙" },
+      { "name": "Gitee 码云", "url": "https://gitee.com", "desc": "国内代码托管平台", "icon": "🦋" },
+      { "name": "Stack Overflow", "url": "https://stackoverflow.com", "desc": "程序员问答社区", "icon": "🧑‍💻" },
+      { "name": "掘金", "url": "https://juejin.cn", "desc": "中文技术社区", "icon": "⛏️" },
+      { "name": "JSON 在线解析", "url": "https://www.json.cn", "desc": "JSON 解析格式化工具", "icon": "🧾" },
+      { "name": "Can I Use", "url": "https://caniuse.com", "desc": "浏览器兼容性查询", "icon": "🌐" }
+    ]
+  },
+  {
+    "cat": "设计素材",
+    "icon": "🎨",
+    "sites": [
+      { "name": "花瓣网", "url": "https://huaban.com", "desc": "设计灵感采集", "icon": "🌸" },
+      { "name": "iconfont", "url": "https://www.iconfont.cn", "desc": "阿里巴巴图标库", "icon": "🔣" },
+      { "name": "千图网", "url": "https://www.58pic.com", "desc": "设计素材下载", "icon": "🖌️" },
+      { "name": "稿定设计", "url": "https://www.gaoding.com", "desc": "在线做图工具", "icon": "🖼️" },
+      { "name": "Behance", "url": "https://www.behance.net", "desc": "全球设计作品集", "icon": "💎" }
+    ]
+  },
+  {
+    "cat": "效率办公",
+    "icon": "⚡",
+    "sites": [
+      { "name": "腾讯文档", "url": "https://docs.qq.com", "desc": "在线文档协作", "icon": "📄" },
+      { "name": "石墨文档", "url": "https://shimo.im", "desc": "轻量在线文档", "icon": "✏️" },
+      { "name": "语雀", "url": "https://www.yuque.com", "desc": "知识库笔记工具", "icon": "📓" },
+      { "name": "幕布", "url": "https://mubu.com", "desc": "大纲笔记工具", "icon": "🧠" },
+      { "name": "ProcessOn", "url": "https://www.processon.com", "desc": "在线思维导图/流程图", "icon": "🗺️" }
+    ]
+  },
+  {
+    "cat": "购物比价",
+    "icon": "🛒",
+    "sites": [
+      { "name": "京东", "url": "https://www.jd.com", "desc": "综合电商平台", "icon": "🐶" },
+      { "name": "淘宝", "url": "https://www.taobao.com", "desc": "国内最大电商平台", "icon": "🛍️" },
+      { "name": "拼多多", "url": "https://www.pinduoduo.com", "desc": "低价团购电商", "icon": "🎯" },
+      { "name": "什么值得买", "url": "https://www.smzdm.com", "desc": "消费决策参考", "icon": "💡" },
+      { "name": "慢慢买", "url": "https://www.manmanbuy.com", "desc": "历史价格查询", "icon": "📉" }
+    ]
+  },
+  {
+    "cat": "新闻资讯",
+    "icon": "📰",
+    "sites": [
+      { "name": "微博热搜", "url": "https://s.weibo.com/top/summary", "desc": "实时热点话题", "icon": "🔥" },
+      { "name": "36氪", "url": "https://36kr.com", "desc": "科技创投媒体", "icon": "🚀" },
+      { "name": "IT之家", "url": "https://www.ithome.com", "desc": "科技数码资讯", "icon": "📱" },
+      { "name": "虎嗅", "url": "https://www.huxiu.com", "desc": "商业科技媒体", "icon": "🐯" },
+      { "name": "少数派", "url": "https://sspai.com", "desc": "数字生活指南", "icon": "🍎" }
+    ]
+  },
+  {
+    "cat": "AI 工具",
+    "icon": "🤖",
+    "sites": [
+      { "name": "DeepSeek", "url": "https://chat.deepseek.com", "desc": "国产免费 AI 助手", "icon": "🐋" },
+      { "name": "豆包", "url": "https://www.doubao.com", "desc": "字节跳动 AI 助手", "icon": "🫘" },
+      { "name": "Kimi", "url": "https://kimi.moonshot.cn", "desc": "长文本 AI 助手", "icon": "🌙" },
+      { "name": "文心一言", "url": "https://yiyan.baidu.com", "desc": "百度 AI 对话", "icon": "🗣️" },
+      { "name": "通义千问", "url": "https://tongyi.aliyun.com", "desc": "阿里 AI 助手", "icon": "☁️" },
+      { "name": "ChatGPT", "url": "https://chat.openai.com", "desc": "全球知名 AI 对话", "icon": "💬" }
+    ]
+  }
+]

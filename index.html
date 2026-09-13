@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>白鲨工具站 - 免费在线实用工具箱</title>
+  <meta name="description" content="白鲨工具站提供免费、干净、无需注册的在线工具箱：JSON格式化、Base64编解码、正则测试、图片压缩、图片格式转换、二维码生成、单位换算等实用工具，全部在本地浏览器运行，数据不上传。">
+  <meta name="keywords" content="在线工具,工具箱,JSON格式化,Base64,图片压缩,二维码生成,单位换算,网址导航">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦈</text></svg>">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <h1><span class="grad">白鲨工具站</span></h1>
+      <p>免费、干净、无需注册的<strong>创作者工具箱</strong> —— 视频无水印下载、文案提取、九宫格切图、图片加水印、配音朗读，自媒体/博主/电商人的常用工具一站配齐，全部在本地浏览器完成，<strong>你的数据不会上传到任何服务器</strong>。</p>
+      <p style="margin-top:8px;font-size:13px;color:var(--text-2)">当前提供 <strong style="color:var(--primary)" id="tool-count-hero">16</strong> 个创作者常用工具 · 持续更新中</p>
+      <div class="hero-search">
+        <input id="site-search" type="search" placeholder="搜索工具或网站，如：视频、九宫格、水印、配音…" autocomplete="off">
+        <span class="search-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg></span>
+        <div class="search-results" id="search-panel"></div>
+      </div>
+      <div class="quick-tools" id="quick-tools"></div>
+    </section>
+
+    <h2 class="section-title">精选工具 <a class="more" href="tools.html">全部工具 →</a></h2>
+    <div class="card-grid" id="featured-grid"></div>
+
+    <h2 class="section-title">图片处理 <a class="more" href="tools.html">更多 →</a></h2>
+    <div class="card-grid" id="cat-image"></div>
+
+    <h2 class="section-title">格式转换 <a class="more" href="tools.html">更多 →</a></h2>
+    <div class="card-grid" id="cat-convert"></div>
+
+    <h2 class="section-title">视频工具 <a class="more" href="tools.html">更多 →</a></h2>
+    <div class="card-grid" id="cat-video"></div>
+
+    <h2 class="section-title">文本处理 <a class="more" href="tools.html">更多 →</a></h2>
+    <div class="card-grid" id="cat-text"></div>
+
+    <h2 class="section-title">常用网址 <a class="more" href="nav.html">进入网址导航 →</a></h2>
+    <div class="nav-grid" id="nav-preview"></div>
+
+    <h2 class="section-title">AI 推荐 <a class="more" href="ai.html">进入 AI 专区 →</a></h2>
+    <div class="nav-grid" id="ai-preview"></div>
+  </main>
+
+  <script src="assets/js/common.js"></script>
+  <script src="assets/js/site.js"></script>
+  <script>
+    (function () {
+      var CAT_NAMES = { image: '图片处理', convert: '格式转换', video: '视频工具', text: '文本处理' };
+
+      BS_UI.loadAllData(function () {
+        var tools = window.BS_DATA.tools;
+        var sites = window.BS_DATA.sites;
+        var ai = window.BS_DATA.ai || [];
+
+        // 工具总数（首页动态显示）
+        document.getElementById('tool-count-hero').textContent = tools.length;
+
+        // 精选工具
+        BS_UI.renderTools(document.getElementById('featured-grid'), tools, { featured: true });
+
+        // 分类展示（每类最多 6 个）
+        Object.keys(CAT_NAMES).forEach(function (cat) {
+          var el = document.getElementById('cat-' + cat);
+          BS_UI.renderTools(el, tools, { category: cat });
+          var cards = el.querySelectorAll('.tool-card');
+          if (cards.length > 6) {
+            for (var i = 6; i < cards.length; i++) cards[i].remove();
+          }
+        });
+
+        // 快捷入口（精选前 8 个）
+        var quick = tools.filter(function (t) { return t.featured; }).slice(0, 8);
+        document.getElementById('quick-tools').innerHTML = quick.map(function (t) {
+          return '<a href="' + t.url + '">' + t.icon + ' ' + t.name + '</a>';
+        }).join('');
+
+        // 常用网址预览（前 8 个）
+        document.getElementById('nav-preview').innerHTML = sites.slice(0, 8).map(BS_UI.navCard).join('');
+
+        // AI 推荐预览（前 6 个）
+        var aiFlat = [];
+        ai.forEach(function (g) { g.items.forEach(function (a) { aiFlat.push(a); }); });
+        document.getElementById('ai-preview').innerHTML = aiFlat.slice(0, 6).map(BS_UI.aiCard).join('');
+      });
+    })();
+  </script>
+</body>
+</html>

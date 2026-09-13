@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>字数统计 - 白鲨工具站</title>
+  <meta name="description" content="在线字数统计工具：统计字数、字符数、单词数、行数、段落数，实时更新，写文章必备。">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦈</text></svg>">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <main class="tool-main">
+    <div class="tool-breadcrumb"></div>
+    <div class="tool-head">
+      <h1>📝 字数统计</h1>
+      <p class="tool-desc">实时统计你的文本：字数、字符、单词、行数、段落。写文章、发帖、交作业前查一查。</p>
+    </div>
+
+    <div class="panel">
+      <textarea id="text" class="input-area" style="min-height:220px" placeholder="在此输入或粘贴文本，统计结果会实时更新…"></textarea>
+      <div class="stat-grid" id="stats"></div>
+    </div>
+  </main>
+
+  <script src="../assets/js/common.js"></script>
+  <script>
+    BS.injectBreadcrumb('字数统计');
+
+    var textEl = document.getElementById('text');
+    var statsEl = document.getElementById('stats');
+
+    function count() {
+      var text = textEl.value;
+      var len = text.length;
+      var chinese = (text.match(/[\u4e00-\u9fa5]/g) || []).length;
+      var words = (text.match(/[A-Za-z]+/g) || []).length;
+      var digits = (text.match(/[0-9]/g) || []).length;
+      var punct = (text.match(/[^\w\s\u4e00-\u9fa5]/gu) || []).length;
+      var spaces = (text.match(/[ \t]/g) || []).length;
+      var lines = text ? text.split(/\r\n|\r|\n/).length : 0;
+      var paras = text ? text.split(/\n\s*\n/).filter(function (p) { return p.trim(); }).length : 0;
+      var noSpace = text.replace(/\s/g, '').length;
+
+      statsEl.innerHTML = [
+        { n: len, l: '总字符数' },
+        { n: chinese, l: '中文字数' },
+        { n: words, l: '英文单词' },
+        { n: digits, l: '数字个数' },
+        { n: punct, l: '标点符号' },
+        { n: spaces, l: '空格数' },
+        { n: noSpace, l: '不含空格' },
+        { n: lines, l: '行数' },
+        { n: paras, l: '段落数' },
+      ].map(function (s) {
+        return '<div class="stat-item"><div class="si-num">' + s.n + '</div><div class="si-label">' + s.l + '</div></div>';
+      }).join('');
+    }
+
+    textEl.addEventListener('input', count);
+    count();
+  </script>
+</body>
+</html>

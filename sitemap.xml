@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 上线前请把 your-domain.com 替换成你的真实域名 -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://your-domain.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://your-domain.com/tools.html</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://your-domain.com/nav.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://your-domain.com/ai.html</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://your-domain.com/tools/video-download.html</loc><priority>0.9</priority></url>
+  <url><loc>https://your-domain.com/tools/nine-grid.html</loc><priority>0.8</priority></url>
+  <url><loc>https://your-domain.com/tools/image-watermark.html</loc><priority>0.8</priority></url>
+  <url><loc>https://your-domain.com/tools/image-compress.html</loc><priority>0.8</priority></url>
+  <url><loc>https://your-domain.com/tools/text-to-speech.html</loc><priority>0.7</priority></url>
+  <url><loc>https://your-domain.com/tools/word-count.html</loc><priority>0.7</priority></url>
+  <url><loc>https://your-domain.com/tools/qrcode.html</loc><priority>0.7</priority></url>
+  <url><loc>https://your-domain.com/tools/qr-decode.html</loc><priority>0.7</priority></url>
+  <url><loc>https://your-domain.com/tools/image-convert.html</loc><priority>0.7</priority></url>
+  <url><loc>https://your-domain.com/tools/color.html</loc><priority>0.7</priority></url>
+  <url><loc>https://your-domain.com/tools/markdown.html</loc><priority>0.7</priority></url>
+  <url><loc>https://your-domain.com/tools/text-diff.html</loc><priority>0.7</priority></url>
+  <url><loc>https://your-domain.com/tools/video-to-gif.html</loc><priority>0.8</priority></url>
+  <url><loc>https://your-domain.com/tools/image-merge.html</loc><priority>0.8</priority></url>
+  <url><loc>https://your-domain.com/tools/text-to-image.html</loc><priority>0.8</priority></url>
+  <url><loc>https://your-domain.com/tools/format-convert.html</loc><priority>0.9</priority></url>
+  <url><loc>https://your-domain.com/about.html</loc><priority>0.5</priority></url>
+</urlset>

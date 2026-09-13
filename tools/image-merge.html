@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>图片拼接 - 白鲨工具站</title>
+  <meta name="description" content="在线图片拼接工具：多张图片一键拼成纵向/横向长图，小红书、公众号长图必备。图片本地处理，不上传。">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦈</text></svg>">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <main class="tool-main">
+    <div class="tool-breadcrumb"></div>
+    <div class="tool-head">
+      <h1>🧩 图片拼接</h1>
+      <p class="tool-desc">多张图片拼成一张长图，支持纵向/横向。做小红书长图、聊天记录长图、产品对比图都能用。图片在本地处理，不会上传。</p>
+    </div>
+
+    <div class="panel">
+      <div class="file-drop" id="drop">
+        <div class="fd-icon">🖼️</div>
+        <div class="fd-hint">点击选择多张图片（可 Ctrl/Shift 多选），或直接拖进来<br>顺序按选择/拖入的顺序拼接</div>
+        <input type="file" id="file" accept="image/*" multiple>
+      </div>
+      <div class="form-grid" style="margin-top:16px">
+        <div>
+          <label class="panel-label">拼接方向</label>
+          <select id="direction" style="width:100%">
+            <option value="vertical" selected>纵向（上下拼，长图）</option>
+            <option value="horizontal">横向（左右拼）</option>
+          </select>
+        </div>
+        <div>
+          <label class="panel-label">图片间距（px）</label>
+          <input type="number" id="gap" value="0" min="0" max="100" style="width:100%">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="btn-merge" disabled>🧩 拼接</button>
+        <button class="btn ghost" id="btn-download" disabled>⬇️ 下载长图</button>
+        <button class="btn ghost" id="btn-reset">🔄 清空</button>
+      </div>
+      <div class="result-line" id="status"></div>
+    </div>
+
+    <div class="panel" id="list-panel" style="display:none">
+      <label class="panel-label">已选图片（点击可移除）</label>
+      <div id="img-list" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+    </div>
+
+    <div class="panel" id="preview-panel" style="display:none">
+      <label class="panel-label">拼接预览</label>
+      <img class="preview-img" id="preview" alt="拼接预览">
+    </div>
+  </main>
+
+  <script src="../assets/js/common.js"></script>
+  <script>
+    BS.injectBreadcrumb('图片拼接');
+
+    var drop = document.getElementById('drop');
+    var fileInput = document.getElementById('file');
+    var directionEl = document.getElementById('direction');
+    var gapEl = document.getElementById('gap');
+    var mergeBtn = document.getElementById('btn-merge');
+    var downloadBtn = document.getElementById('btn-download');
+    var statusEl = document.getElementById('status');
+    var listPanel = document.getElementById('list-panel');
+    var imgList = document.getElementById('img-list');
+    var previewPanel = document.getElementById('preview-panel');
+    var preview = document.getElementById('preview');
+
+    var images = []; // [{name, dataUrl, img}]
+    var resultUrl = null;
+
+    function addFiles(fileList) {
+      for (var i = 0; i < fileList.length; i++) {
+        (function (file) {
+          if (!file.type.startsWith('image/')) return;
+          var reader = new FileReader();
+          reader.onload = function () {
+            var img = new Image();
+            img.onload = function () {
+              images.push({ name: file.name, img: img });
+              renderList();
+              mergeBtn.disabled = images.length < 2;
+              statusEl.textContent = '✅ 已选 ' + images.length + ' 张图片（至少 2 张才能拼接）';
+              statusEl.style.color = '#16a34a';
+            };
+            img.src = reader.result;
+          };
+          reader.readAsDataURL(file);
+        })(fileList[i]);
+      }
+    }
+
+    function renderList() {
+      imgList.innerHTML = images.map(function (im, i) {
+        return '<div style="position:relative;cursor:pointer" title="点击移除">' +
+          '<img src="' + im.img.src + '" data-i="' + i + '" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">' +
+          '<span style="position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:50%;width:18px;height:18px;font-size:12px;line-height:18px;text-align:center">×</span></div>';
+      }).join('');
+      imgList.querySelectorAll('div').forEach(function (el) {
+        el.addEventListener('click', function () {
+          var i = parseInt(el.querySelector('img').dataset.i, 10);
+          images.splice(i, 1);
+          renderList();
+          mergeBtn.disabled = images.length < 2;
+          resultUrl = null;
+          downloadBtn.disabled = true;
+          previewPanel.style.display = 'none';
+          if (!images.length) statusEl.textContent = '';
+        });
+      });
+      listPanel.style.display = images.length ? 'block' : 'none';
+    }
+
+    mergeBtn.addEventListener('click', function () {
+      if (images.length < 2) { BS.toast('至少需要 2 张图片'); return; }
+      var vertical = directionEl.value === 'vertical';
+      var gap = parseInt(gapEl.value, 10) || 0;
+      var totalW = 0, totalH = 0;
+      if (vertical) {
+        totalW = Math.max.apply(null, images.map(function (im) { return im.img.naturalWidth; }));
+        totalH = images.reduce(function (s, im) { return s + im.img.naturalHeight; }, 0) + gap * (images.length - 1);
+      } else {
+        totalH = Math.max.apply(null, images.map(function (im) { return im.img.naturalHeight; }));
+        totalW = images.reduce(function (s, im) { return s + im.img.naturalWidth; }, 0) + gap * (images.length - 1);
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = totalW;
+      canvas.height = totalH;
+      var ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, totalW, totalH);
+      var offset = 0;
+      images.forEach(function (im) {
+        if (vertical) {
+          ctx.drawImage(im.img, (totalW - im.img.naturalWidth) / 2, offset);
+          offset += im.img.naturalHeight + gap;
+        } else {
+          ctx.drawImage(im.img, offset, (totalH - im.img.naturalHeight) / 2);
+          offset += im.img.naturalWidth + gap;
+        }
+      });
+      resultUrl = canvas.toDataURL('image/png');
+      preview.src = resultUrl;
+      previewPanel.style.display = 'block';
+      downloadBtn.disabled = false;
+      statusEl.textContent = '✅ 拼接完成：' + totalW + '×' + totalH + 'px';
+      statusEl.style.color = '#16a34a';
+    });
+
+    downloadBtn.addEventListener('click', function () {
+      if (!resultUrl) return;
+      var a = document.createElement('a');
+      a.href = resultUrl;
+      a.download = '拼接长图.png';
+      a.click();
+      BS.toast('开始下载 ⬇️');
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', function () {
+      images = []; resultUrl = null;
+      renderList(); mergeBtn.disabled = true; downloadBtn.disabled = true;
+      previewPanel.style.display = 'none'; statusEl.textContent = ''; fileInput.value = '';
+    });
+
+    drop.addEventListener('click', function () { fileInput.click(); });
+    drop.addEventListener('dragover', function (e) { e.preventDefault(); drop.classList.add('drag'); });
+    drop.addEventListener('dragleave', function () { drop.classList.remove('drag'); });
+    drop.addEventListener('drop', function (e) {
+      e.preventDefault(); drop.classList.remove('drag');
+      if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener('change', function () { if (fileInput.files.length) addFiles(fileInput.files); });
+  </script>
+</body>
+</html>

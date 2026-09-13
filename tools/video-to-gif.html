@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>视频转 GIF - 白鲨工具站</title>
+  <meta name="description" content="在线视频转GIF工具：上传视频一键转动态表情包/GIF动图，可调帧率和尺寸。视频本地处理，不上传。">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦈</text></svg>">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <main class="tool-main">
+    <div class="tool-breadcrumb"></div>
+    <div class="tool-head">
+      <h1>🎞️ 视频转 GIF</h1>
+      <p class="tool-desc">上传视频，一键转成动态 GIF 表情包/动图。建议用短视频（5-10 秒效果最好），全部在本地处理，不会上传。</p>
+    </div>
+
+    <div class="panel">
+      <div class="file-drop" id="drop">
+        <div class="fd-icon">🎬</div>
+        <div class="fd-hint">点击选择视频，或直接拖进来（MP4/WebM 等）</div>
+        <input type="file" id="file" accept="video/*">
+      </div>
+      <div class="form-grid" style="margin-top:16px">
+        <div>
+          <label class="panel-label">帧间隔（越小越流畅，文件越大）</label>
+          <select id="interval" style="width:100%">
+            <option value="0.1">0.1 秒（流畅）</option>
+            <option value="0.2" selected>0.2 秒（推荐）</option>
+            <option value="0.5">0.5 秒（精简）</option>
+            <option value="1">1 秒（超精简）</option>
+          </select>
+        </div>
+        <div>
+          <label class="panel-label">输出宽度</label>
+          <select id="width" style="width:100%">
+            <option value="200">200px（表情包）</option>
+            <option value="320" selected>320px（推荐）</option>
+            <option value="480">480px（清晰）</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="btn-convert" disabled>🎞️ 转为 GIF</button>
+        <button class="btn ghost" id="btn-download" disabled>⬇️ 下载 GIF</button>
+      </div>
+      <div class="result-line" id="status"></div>
+    </div>
+
+    <div class="panel" id="preview-panel" style="display:none">
+      <label class="panel-label">GIF 预览</label>
+      <img class="preview-img" id="preview" alt="GIF预览" style="max-width:320px">
+    </div>
+  </main>
+
+  <script src="../assets/js/common.js"></script>
+  <script type="module">
+    import { GIFEncoder, quantize, applyPalette } from '../assets/vendor/gifenc.esm.js';
+
+    BS.injectBreadcrumb('视频转 GIF');
+
+    var drop = document.getElementById('drop');
+    var fileInput = document.getElementById('file');
+    var intervalEl = document.getElementById('interval');
+    var widthEl = document.getElementById('width');
+    var convertBtn = document.getElementById('btn-convert');
+    var downloadBtn = document.getElementById('btn-download');
+    var statusEl = document.getElementById('status');
+    var previewPanel = document.getElementById('preview-panel');
+    var preview = document.getElementById('preview');
+
+    var current = null; // { videoUrl, name, duration }
+    var gifBlob = null;
+
+    function loadFile(file) {
+      if (!file || !file.type.startsWith('video/')) { BS.toast('请选择视频文件'); return; }
+      var url = URL.createObjectURL(file);
+      var video = document.createElement('video');
+      video.preload = 'metadata';
+      video.onloadedmetadata = function () {
+        current = { videoUrl: url, name: file.name, video: video, duration: video.duration };
+        convertBtn.disabled = false;
+        statusEl.textContent = '✅ 已加载：' + file.name + '（' + Math.round(video.duration) + ' 秒）';
+        statusEl.style.color = '#16a34a';
+      };
+      video.src = url;
+    }
+
+    function seekTo(video, t) {
+      return new Promise(function (resolve) {
+        var done = function () { video.removeEventListener('seeked', done); resolve(); };
+        video.addEventListener('seeked', done);
+        video.currentTime = t;
+      });
+    }
+
+    convertBtn.addEventListener('click', async function () {
+      if (!current) return;
+      var interval = parseFloat(intervalEl.value);
+      var outWidth = parseInt(widthEl.value, 10);
+      var total = Math.floor(current.duration / interval);
+      if (total > 300) {
+        statusEl.textContent = '❌ 帧数太多（' + total + ' 帧），请增大帧间隔或换更短的视频';
+        statusEl.style.color = '#ef4444';
+        return;
+      }
+      if (total > 150 && !confirm('将生成约 ' + total + ' 帧，可能需要等待一会儿，继续吗？')) return;
+
+      statusEl.textContent = '⏳ 正在抽取画面（0/' + total + '）…';
+      statusEl.style.color = '';
+      convertBtn.disabled = true;
+      gifBlob = null;
+      downloadBtn.disabled = true;
+
+      var video = current.video;
+      video.pause();
+      video.currentTime = 0;
+
+      var canvas = document.createElement('canvas');
+      var scale = outWidth / video.videoWidth;
+      canvas.width = outWidth;
+      canvas.height = Math.round(video.videoHeight * scale);
+      var ctx = canvas.getContext('2d');
+
+      var frames = [];
+      for (var i = 0; i < total; i++) {
+        var t = Math.min(i * interval, current.duration - 0.05);
+        await seekTo(video, t);
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        frames.push(ctx.getImageData(0, 0, canvas.width, canvas.height).data);
+        if (i % 10 === 0 || i === total - 1) {
+          statusEl.textContent = '⏳ 正在抽取画面（' + (i + 1) + '/' + total + '）…';
+        }
+      }
+
+      statusEl.textContent = '⏳ 正在编码 GIF（这步最耗时）…';
+      await new Promise(function (r) { setTimeout(r, 50); }); // 让界面刷新
+
+      var gif = GIFEncoder();
+      var delay = Math.round(interval * 1000);
+      for (var f = 0; f < frames.length; f++) {
+        var palette = quantize(frames[f], 256);
+        var index = applyPalette(frames[f], palette);
+        gif.writeFrame(index, canvas.width, canvas.height, { palette: palette, delay: delay });
+      }
+      gif.finish();
+      var bytes = gif.bytes();
+      gifBlob = new Blob([bytes], { type: 'image/gif' });
+      preview.src = URL.createObjectURL(gifBlob);
+      previewPanel.style.display = 'block';
+      downloadBtn.disabled = false;
+      convertBtn.disabled = false;
+      statusEl.textContent = '✅ 生成完成：' + Math.round(gifBlob.size / 1024) + ' KB（' + frames.length + ' 帧）';
+      statusEl.style.color = '#16a34a';
+    });
+
+    downloadBtn.addEventListener('click', function () {
+      if (!gifBlob) return;
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(gifBlob);
+      a.download = current.name.replace(/\.[^.]+$/, '') + '.gif';
+      a.click();
+      BS.toast('开始下载 ⬇️');
+    });
+
+    drop.addEventListener('click', function () { fileInput.click(); });
+    drop.addEventListener('dragover', function (e) { e.preventDefault(); drop.classList.add('drag'); });
+    drop.addEventListener('dragleave', function () { drop.classList.remove('drag'); });
+    drop.addEventListener('drop', function (e) {
+      e.preventDefault(); drop.classList.remove('drag');
+      if (e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', function () { if (fileInput.files.length) loadFile(fileInput.files[0]); });
+  </script>
+</body>
+</html>

@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>视频无水印下载 - 白鲨工具站</title>
+  <meta name="description" content="粘贴视频链接，一键下载无水印视频、提取文案，支持提取 MP3 音频。当前支持 B站。仅供个人学习使用。">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦈</text></svg>">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <main class="tool-main">
+    <div class="tool-breadcrumb"></div>
+    <div class="tool-head">
+      <h1>🎬 视频无水印下载</h1>
+      <p class="tool-desc">粘贴视频链接 → 下载无水印原片 + 复制文案 + 提取 MP3。<strong>平台支持：B站 ✅ 免登录可用</strong>；抖音 🟡 需粘贴登录 Cookie（见下方"高级选项"）。<em style="color:var(--text-2)">仅供个人学习使用，请尊重版权。</em></p>
+    </div>
+
+    <div class="panel">
+      <label class="panel-label">视频链接（B站 / 抖音）</label>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <input type="text" id="url" placeholder="例如：https://www.bilibili.com/video/BV1GJ411x7h7 或 https://www.douyin.com/video/7xxxxx" style="flex:1;min-width:240px">
+        <button class="btn" id="btn-parse">🔍 解析</button>
+      </div>
+      <details style="margin-top:10px;font-size:13.5px">
+        <summary style="cursor:pointer;color:var(--text-2)">⚙️ 高级选项：抖音 Cookie（可选，B站不需要）</summary>
+        <div style="margin-top:8px">
+          <label class="panel-label">抖音 Cookie（从浏览器复制）</label>
+          <textarea id="dy-cookie" class="input-area" style="min-height:60px" placeholder="登录抖音网页版后，按 F12 → 网络 → 随便点一个请求 → 请求头里复制 Cookie 那一整行。保存后只存在你自己的浏览器里。"></textarea>
+          <div class="btn-row">
+            <button class="btn ghost small" id="btn-save-cookie">💾 保存 Cookie</button>
+            <button class="btn ghost small" id="btn-clear-cookie">🗑️ 清除</button>
+          </div>
+          <div class="result-line" id="cookie-status"></div>
+        </div>
+      </details>
+      <div class="result-line" id="status"></div>
+    </div>
+
+    <div class="panel" id="result" style="display:none">
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <img id="cover" alt="封面" style="width:160px;height:100px;object-fit:cover;border-radius:8px;border:1px solid var(--border);background:var(--bg)">
+        <div style="flex:1;min-width:220px">
+          <div style="font-size:16px;font-weight:700" id="v-title">-</div>
+          <div style="font-size:13px;color:var(--text-2);margin-top:6px">
+            <span id="v-owner"></span><span id="v-meta"></span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px">
+        <label class="panel-label">视频文案（可复制）</label>
+        <div class="result-box" id="v-desc" style="font-family:inherit;max-height:160px"></div>
+        <div class="btn-row">
+          <button class="btn ghost small" id="btn-copy-desc">📋 复制文案</button>
+        </div>
+      </div>
+
+      <div style="margin-top:16px">
+        <label class="panel-label">无水印视频下载</label>
+        <div class="btn-row" id="quality-btns"></div>
+        <div class="result-line" id="dl-status"></div>
+      </div>
+
+      <div style="margin-top:16px">
+        <label class="panel-label">提取音频</label>
+        <div class="btn-row">
+          <button class="btn" id="btn-mp3">🎵 提取为 MP3（本地转换）</button>
+          <button class="btn ghost" id="btn-m4a">⬇️ 下载原始音频（m4a）</button>
+        </div>
+        <div class="result-line" id="mp3-status"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../assets/js/common.js"></script>
+  <script src="../assets/vendor/lame.min.js"></script>
+  <script>
+    BS.injectBreadcrumb('视频无水印下载');
+
+    var urlEl = document.getElementById('url');
+    var statusEl = document.getElementById('status');
+    var resultPanel = document.getElementById('result');
+    var coverEl = document.getElementById('cover');
+    var titleEl = document.getElementById('v-title');
+    var ownerEl = document.getElementById('v-owner');
+    var metaEl = document.getElementById('v-meta');
+    var descEl = document.getElementById('v-desc');
+    var qualityBtns = document.getElementById('quality-btns');
+    var dlStatus = document.getElementById('dl-status');
+    var mp3Status = document.getElementById('mp3-status');
+
+    var current = null; // { info, playUrls, audio }
+
+    function fmtDuration(sec) {
+      sec = Math.round(sec || 0);
+      var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+      var p = function (n) { return n < 10 ? '0' + n : '' + n; };
+      return (h ? h + ':' : '') + p(m) + ':' + p(s);
+    }
+
+    function fmtSize(bytes) {
+      if (!bytes) return '';
+      if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    document.getElementById('btn-parse').addEventListener('click', parse);
+    urlEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') parse(); });
+
+    // ---------- 抖音 Cookie（存本地） ----------
+    var dyCookieEl = document.getElementById('dy-cookie');
+    var cookieStatus = document.getElementById('cookie-status');
+    function loadCookie() {
+      var c = localStorage.getItem('bs-dy-cookie') || '';
+      dyCookieEl.value = c;
+      if (c) { cookieStatus.textContent = '✅ 已保存 Cookie（' + c.length + ' 字符）'; cookieStatus.style.color = '#16a34a'; }
+    }
+    document.getElementById('btn-save-cookie').addEventListener('click', function () {
+      var c = dyCookieEl.value.trim();
+      if (!c) { BS.toast('请先粘贴 Cookie'); return; }
+      localStorage.setItem('bs-dy-cookie', c);
+      cookieStatus.textContent = '✅ 已保存（' + c.length + ' 字符）';
+      cookieStatus.style.color = '#16a34a';
+      BS.toast('Cookie 已保存 💾');
+    });
+    document.getElementById('btn-clear-cookie').addEventListener('click', function () {
+      localStorage.removeItem('bs-dy-cookie');
+      dyCookieEl.value = '';
+      cookieStatus.textContent = '🗑️ 已清除';
+      cookieStatus.style.color = '';
+    });
+    loadCookie();
+
+    // ---------- 平台识别 ----------
+    function detectPlatform(u) {
+      if (/douyin|iesdouyin/i.test(u)) return 'douyin';
+      if (/bilibili|b23\.tv/i.test(u) || /^BV[0-9A-Za-z]{10}/.test(u)) return 'bilibili';
+      return 'unknown';
+    }
+
+    function parse() {
+      var u = urlEl.value.trim();
+      if (!u) { BS.toast('请先粘贴视频链接'); return; }
+      var platform = detectPlatform(u);
+      if (platform === 'unknown') {
+        statusEl.textContent = '❌ 暂时只支持 B站 和 抖音链接';
+        statusEl.style.color = '#ef4444';
+        return;
+      }
+      statusEl.textContent = '⏳ 正在解析' + (platform === 'douyin' ? '（抖音）' : '（B站）') + '，请稍候…';
+      statusEl.style.color = '';
+      resultPanel.style.display = 'none';
+      current = null;
+
+      var api = '../api/bili-parse?url=' + encodeURIComponent(u);
+      if (platform === 'douyin') {
+        var cookie = localStorage.getItem('bs-dy-cookie') || '';
+        api = '../api/douyin-parse?url=' + encodeURIComponent(u) + '&cookie=' + encodeURIComponent(cookie);
+      }
+
+      fetch(api)
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          if (!res.ok) throw new Error(res.error || '解析失败');
+          current = normalize(res.data, platform);
+          render(current);
+          statusEl.textContent = '✅ 解析成功';
+          statusEl.style.color = '#16a34a';
+        })
+        .catch(function (e) {
+          statusEl.textContent = '❌ ' + e.message;
+          statusEl.style.color = '#ef4444';
+        });
+    }
+
+    // 把各平台数据统一成一种结构
+    function normalize(data, platform) {
+      if (platform === 'douyin') {
+        return {
+          platform: 'douyin',
+          info: {
+            pic: data.pic || '',
+            title: data.title || '抖音作品',
+            owner: data.owner || '',
+            duration: data.duration || 0,
+            desc: data.desc || '',
+            tname: '抖音',
+            bvid: data.bvid || '',
+          },
+          playUrls: [{ url: data.videoUrl, label: '无水印原片', size: 0 }],
+          audio: null,
+        };
+      }
+      return { platform: 'bilibili', info: data.info, playUrls: data.playUrls, audio: data.audio };
+    }
+
+    function render(data) {
+      coverEl.src = data.info.pic || '';
+      titleEl.textContent = data.info.title;
+      ownerEl.textContent = (data.platform === 'douyin' ? '作者：' : 'UP主：') + (data.info.owner || '-') + ' · ';
+      metaEl.textContent = '时长 ' + fmtDuration(data.info.duration) + (data.info.tname ? ' · ' + data.info.tname : '') +
+        (data.info.bvid ? ' · ' + data.info.bvid : '');
+
+      descEl.textContent = data.info.desc || '（该视频没有文案简介）';
+
+      qualityBtns.innerHTML = data.playUrls.map(function (p) {
+        return '<button class="btn ghost" data-url="' + p.url + '" data-size="' + p.size + '">⬇️ 下载 ' + p.label +
+          (p.size ? '（' + fmtSize(p.size) + '）' : '') + '</button>';
+      }).join('');
+      qualityBtns.querySelectorAll('button').forEach(function (btn) {
+        btn.addEventListener('click', function () { downloadVideo(btn.dataset.url, btn.dataset.size); });
+      });
+
+      // 抖音没有单独的音频流/MP3，提示一下
+      var mp3Btn = document.getElementById('btn-mp3');
+      var m4aBtn = document.getElementById('btn-m4a');
+      if (data.platform === 'douyin' && !data.audio) {
+        mp3Btn.disabled = true;
+        m4aBtn.disabled = true;
+        mp3Status.textContent = '（抖音视频已含音频，直接下载视频即可）';
+      } else {
+        mp3Btn.disabled = false;
+        m4aBtn.disabled = false;
+        mp3Status.textContent = '';
+      }
+
+      resultPanel.style.display = 'block';
+    }
+
+    function downloadVideo(url, size) {
+      if (!url) return;
+      var name = (current.info.title || 'video').replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 80) + '.mp4';
+      dlStatus.textContent = '⏳ 正在为你下载' + (size ? '（约 ' + fmtSize(size) + '，请耐心等待）' : '') + '…';
+      var a = document.createElement('a');
+      a.href = '../api/bili-download?url=' + encodeURIComponent(url) + '&name=' + encodeURIComponent(name);
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      dlStatus.textContent = '⬇️ 已开始下载：' + name;
+    }
+
+    document.getElementById('btn-copy-desc').addEventListener('click', function () {
+      if (!current) return;
+      navigator.clipboard.writeText(current.info.desc || '').then(function () { BS.toast('文案已复制 📋'); });
+    });
+
+    document.getElementById('btn-m4a').addEventListener('click', function () {
+      if (!current || !current.audio) { BS.toast('该视频没有可用的音频流'); return; }
+      var name = (current.info.title || 'audio').replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 80) + '.m4a';
+      var a = document.createElement('a');
+      a.href = '../api/bili-download?url=' + encodeURIComponent(current.audio.url) + '&name=' + encodeURIComponent(name);
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      BS.toast('开始下载音频 ⬇️');
+    });
+
+    // ---------- MP3 提取（本地 lamejs 编码） ----------
+    var audioCtx = null;
+
+    document.getElementById('btn-mp3').addEventListener('click', function () {
+      if (!current || !current.audio) { BS.toast('该视频没有可用的音频流'); return; }
+      var dur = current.info.duration || 0;
+      if (dur > 3600) { BS.toast('视频超过 1 小时，浏览器内存可能不够，请先试下载 m4a'); return; }
+      if (dur > 1800 && !confirm('视频较长（' + fmtDuration(dur) + '），转换可能较慢，继续吗？')) return;
+      convertMp3();
+    });
+
+    function convertMp3() {
+      mp3Status.textContent = '⏳ 正在下载音频…（第 1/3 步）';
+      mp3Status.style.color = '';
+      var name = (current.info.title || 'audio').replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 80) + '.mp3';
+
+      fetch('../api/bili-download?url=' + encodeURIComponent(current.audio.url) + '&name=' + encodeURIComponent('tmp.m4a'))
+        .then(function (r) {
+          if (!r.ok) throw new Error('音频下载失败');
+          return r.arrayBuffer();
+        })
+        .then(function (buf) {
+          mp3Status.textContent = '⏳ 正在解码音频…（第 2/3 步）';
+          if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          return audioCtx.decodeAudioData(buf);
+        })
+        .then(function (audioBuffer) {
+          mp3Status.textContent = '⏳ 正在编码 MP3…（第 3/3 步）';
+          return encodeMp3(audioBuffer);
+        })
+        .then(function (blob) {
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = name;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+          mp3Status.textContent = '✅ MP3 转换完成，已开始下载：' + name;
+          mp3Status.style.color = '#16a34a';
+        })
+        .catch(function (e) {
+          mp3Status.textContent = '❌ 转换失败：' + e.message + '（可改用「下载原始音频 m4a」）';
+          mp3Status.style.color = '#ef4444';
+        });
+    }
+
+    function encodeMp3(buffer) {
+      return new Promise(function (resolve, reject) {
+        try {
+          var channels = buffer.numberOfChannels;
+          var sampleRate = buffer.sampleRate;
+          var left = buffer.getChannelData(0);
+          var right = channels > 1 ? buffer.getChannelData(1) : null;
+
+          // 转为 Int16
+          function toInt16(f32) {
+            var out = new Int16Array(f32.length);
+            for (var i = 0; i < f32.length; i++) {
+              var s = f32[i];
+              out[i] = s < -1 ? -32768 : s > 1 ? 32767 : Math.round(s * 32767);
+            }
+            return out;
+          }
+          var L = toInt16(left);
+          var R = right ? toInt16(right) : null;
+
+          var encoder = new lamejs.Mp3Encoder(channels > 1 ? 2 : 1, sampleRate, 128);
+          var data = [];
+          var block = 1152;
+          for (var i = 0; i < L.length; i += block) {
+            var lChunk = L.subarray(i, i + block);
+            var rChunk = R ? R.subarray(i, i + block) : null;
+            var mp3buf = R ? encoder.encodeBuffer(lChunk, rChunk) : encoder.encodeBuffer(lChunk);
+            if (mp3buf.length) data.push(new Int8Array(mp3buf));
+          }
+          var end = encoder.flush();
+          if (end.length) data.push(new Int8Array(end));
+          resolve(new Blob(data, { type: 'audio/mpeg' }));
+        } catch (e) {
+          reject(e);
+        }
+      });
+    }
+  </script>
+</body>
+</html>

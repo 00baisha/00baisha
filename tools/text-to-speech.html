@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>文本转语音 - 白鲨工具站</title>
+  <meta name="description" content="在线文字转语音工具：输入文字一键朗读，支持中文、英语、日语等，可调语速和音调。免费。">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦈</text></svg>">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <main class="tool-main">
+    <div class="tool-breadcrumb"></div>
+    <div class="tool-head">
+      <h1>🔊 文本转语音</h1>
+      <p class="tool-desc">输入文字，浏览器直接朗读。学外语、听文章都能用，完全免费，文字不出本机。</p>
+    </div>
+
+    <div class="panel">
+      <label class="panel-label">要朗读的文字</label>
+      <textarea id="text" class="input-area" style="min-height:160px" placeholder="输入文字，点击朗读…&#10;例如：你好，欢迎使用白鲨工具站！"></textarea>
+      <div class="form-grid" style="margin-top:14px">
+        <div>
+          <label class="panel-label">语言</label>
+          <select id="lang" style="width:100%">
+            <option value="zh-CN">中文（普通话）</option>
+            <option value="zh-TW">中文（台湾）</option>
+            <option value="en-US">英语（美式）</option>
+            <option value="en-GB">英语（英式）</option>
+            <option value="ja-JP">日语</option>
+            <option value="ko-KR">韩语</option>
+            <option value="fr-FR">法语</option>
+            <option value="de-DE">德语</option>
+          </select>
+        </div>
+        <div>
+          <label class="panel-label">语速：<span id="rate-val">1.0×</span></label>
+          <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1" style="width:100%">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="btn-speak">🔊 朗读</button>
+        <button class="btn ghost" id="btn-stop">⏹️ 停止</button>
+        <button class="btn ghost" id="btn-pause">⏸️ 暂停/继续</button>
+      </div>
+      <div class="result-line" id="status"></div>
+    </div>
+  </main>
+
+  <script src="../assets/js/common.js"></script>
+  <script>
+    BS.injectBreadcrumb('文本转语音');
+
+    var textEl = document.getElementById('text');
+    var langEl = document.getElementById('lang');
+    var rateEl = document.getElementById('rate');
+    var rateVal = document.getElementById('rate-val');
+    var statusEl = document.getElementById('status');
+    var paused = false;
+
+    function pickVoice(lang) {
+      var voices = speechSynthesis.getVoices();
+      // 优先精确匹配，其次前缀匹配
+      var exact = voices.find(function (v) { return v.lang === lang; });
+      if (exact) return exact;
+      var prefix = voices.find(function (v) { return v.lang && v.lang.split('-')[0] === lang.split('-')[0]; });
+      return prefix || voices[0] || null;
+    }
+
+    function speak() {
+      var text = textEl.value.trim();
+      if (!text) { BS.toast('请先输入文字'); return; }
+      speechSynthesis.cancel();
+      paused = false;
+      var u = new SpeechSynthesisUtterance(text);
+      var voice = pickVoice(langEl.value);
+      if (voice) u.voice = voice;
+      u.lang = langEl.value;
+      u.rate = parseFloat(rateEl.value);
+      u.onend = function () { statusEl.textContent = '✅ 朗读完成'; statusEl.style.color = '#16a34a'; };
+      u.onerror = function (e) {
+        if (e.error !== 'interrupted' && e.error !== 'canceled') {
+          statusEl.textContent = '朗读出错：' + e.error + '（可换个语言试试）';
+          statusEl.style.color = '#ef4444';
+        }
+      };
+      speechSynthesis.speak(u);
+      statusEl.textContent = '🔊 正在朗读…';
+      statusEl.style.color = '';
+    }
+
+    document.getElementById('btn-speak').addEventListener('click', speak);
+    document.getElementById('btn-stop').addEventListener('click', function () {
+      speechSynthesis.cancel();
+      statusEl.textContent = '⏹️ 已停止';
+    });
+    document.getElementById('btn-pause').addEventListener('click', function () {
+      if (speechSynthesis.speaking) {
+        if (paused) { speechSynthesis.resume(); paused = false; statusEl.textContent = '▶️ 继续朗读…'; }
+        else { speechSynthesis.pause(); paused = true; statusEl.textContent = '⏸️ 已暂停'; }
+      } else { BS.toast('当前没有在朗读'); }
+    });
+    rateEl.addEventListener('input', function () { rateVal.textContent = parseFloat(rateEl.value).toFixed(1) + '×'; });
+    // 某些浏览器需要用户交互后才加载语音列表
+    speechSynthesis.getVoices();
+    speechSynthesis.onvoiceschanged = function () { speechSynthesis.getVoices(); };
+  </script>
+</body>
+</html>

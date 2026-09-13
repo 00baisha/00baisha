@@ -1,0 +1,924 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>全能格式转换器 - 白鲨工具站</title>
+  <meta name="description" content="在线全能格式转换器：视频、音频、图片任意互转，浏览器本地转换，文件不上传。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232563EB'/%3E%3Cpath d='M8 22 L16 8 L24 22 Z' fill='white'/%3E%3C/svg%3E">
+  <style>
+    /* ============================================================
+       设计系统
+       背景暖浅灰 / 一张白卡 / 单一强调色 / 细线分隔 / 悬浮才出阴影
+       ============================================================ */
+    :root {
+      --bg: #F7F7F5;
+      --surface: #FFFFFF;
+      --surface-muted: #FAFAF8;
+      --text: #1A1A1A;
+      --text-secondary: #6B6B6B;
+      --text-muted: #9A9A9A;
+      --border: #E8E8E4;
+      --border-strong: #DCDCD6;
+
+      /* 唯一强调色：只用于按钮与焦点态，占比 < 8% */
+      --accent: #2563EB;
+      --accent-hover: #1D4ED8;
+      --accent-soft: rgba(37, 99, 235, 0.08);
+      --accent-ring: rgba(37, 99, 235, 0.25);
+
+      /* 功能色：一律以低透明度背景条呈现 */
+      --success: #16A34A;
+      --success-soft: rgba(22, 163, 74, 0.10);
+      --warning: #D97706;
+      --warning-soft: rgba(217, 119, 6, 0.10);
+      --error: #DC2626;
+      --error-soft: rgba(220, 38, 38, 0.08);
+
+      --radius-card: 12px;
+      --radius-ctl: 8px;
+      --radius-tag: 6px;
+
+      --shadow-hover: 0 1px 3px rgba(0, 0, 0, 0.06);
+      --shadow-float: 0 4px 16px rgba(0, 0, 0, 0.08);
+
+      --font-ui: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", "SF Mono", "Cascadia Code", Consolas, monospace;
+
+      --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* 深色主题：同样克制，不用纯黑 */
+    [data-theme="dark"] {
+      --bg: #141413;
+      --surface: #1C1C1B;
+      --surface-muted: #20201F;
+      --text: #F5F5F4;
+      --text-secondary: #A8A8A3;
+      --text-muted: #6E6E69;
+      --border: #2A2A28;
+      --border-strong: #383835;
+      --accent: #3B82F6;
+      --accent-hover: #60A5FA;
+      --accent-soft: rgba(59, 130, 246, 0.12);
+      --accent-ring: rgba(59, 130, 246, 0.35);
+      --success: #22C55E;
+      --success-soft: rgba(34, 197, 94, 0.12);
+      --warning: #F59E0B;
+      --warning-soft: rgba(245, 158, 11, 0.12);
+      --error: #F87171;
+      --error-soft: rgba(248, 113, 113, 0.10);
+      --shadow-hover: 0 1px 3px rgba(0, 0, 0, 0.4);
+      --shadow-float: 0 4px 16px rgba(0, 0, 0, 0.5);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: var(--font-ui);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      transition: background-color 250ms ease-out, color 250ms ease-out;
+    }
+
+    /* 焦点态：2px 强调色描边（无障碍键盘导航） */
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    /* ============================================================
+       顶部导航：56px 高，底部 1px 细线
+       ============================================================ */
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .logo-text {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    .nav-links {
+      display: flex;
+      gap: 4px;
+      margin-left: auto;
+      /* 导航字距略宽，制造克制感 */
+    }
+    .nav-links a {
+      padding: 7px 14px;
+      border-radius: var(--radius-ctl);
+      font-size: 13.5px;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 180ms ease-out, background-color 180ms ease-out;
+    }
+    .nav-links a:hover { color: var(--text); background: var(--surface-muted); }
+    .nav-links a.active { color: var(--text); }
+
+    .theme-toggle {
+      width: 34px;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-ctl);
+      background: var(--surface);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 180ms ease-out;
+    }
+    .theme-toggle:hover { color: var(--text); border-color: var(--border-strong); }
+
+    /* ============================================================
+       主体：1200px 居中；首屏即工具
+       ============================================================ */
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 72px;
+    }
+
+    /* 首屏标题：一行标题 + 一句副标题，克制 */
+    .tool-head {
+      margin-bottom: 24px;
+    }
+    .tool-head h1 {
+      font-size: 24px;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+    }
+    .tool-head p {
+      margin-top: 6px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      max-width: 560px;
+    }
+
+    /* 工具工作区：左设置 / 右预览 */
+    .tool-layout {
+      display: grid;
+      grid-template-columns: minmax(320px, 400px) 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      padding: 24px;
+    }
+
+    .panel-title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    /* ============================================================
+       上传区：拖拽 hover 变淡蓝
+       ============================================================ */
+    .drop-zone {
+      border: 1px dashed var(--border-strong);
+      border-radius: var(--radius-card);
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      background: var(--surface-muted);
+      transition: border-color 200ms ease-out, background-color 200ms ease-out;
+      position: relative;
+    }
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .drop-zone.has-file { border-style: solid; border-color: var(--border-strong); padding: 24px 20px; }
+    .drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .drop-icon {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .drop-main { font-size: 14.5px; font-weight: 550; }
+    .drop-sub { margin-top: 4px; font-size: 13px; color: var(--text-muted); }
+    .drop-file {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      word-break: break-all;
+    }
+    .drop-file .file-ext {
+      padding: 3px 8px;
+      border-radius: var(--radius-tag);
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .drop-file .file-size { color: var(--text-muted); font-size: 12px; white-space: nowrap; }
+    .drop-file .file-remove {
+      margin-left: auto;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 13px;
+      padding: 4px 8px;
+      border-radius: var(--radius-ctl);
+    }
+    .drop-file .file-remove:hover { color: var(--error); background: var(--error-soft); }
+
+    /* ============================================================
+       控件
+       ============================================================ */
+    .field-label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 550;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .format-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .format-btn {
+      padding: 9px 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-ctl);
+      background: var(--surface);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      cursor: pointer;
+      transition: all 180ms ease-out;
+    }
+    .format-btn:hover { border-color: var(--border-strong); color: var(--text); }
+    .format-btn.selected {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+      font-weight: 600;
+    }
+
+    /* 更多设置：默认折叠，信息密度低 */
+    .more-settings { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px; }
+    .more-settings summary {
+      list-style: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+    }
+    .more-settings summary::-webkit-details-marker { display: none; }
+    .more-settings summary .chev { transition: transform 200ms ease-out; }
+    .more-settings[open] summary .chev { transform: rotate(90deg); }
+    .more-settings summary:hover { color: var(--text); }
+    .settings-body { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .settings-body select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-ctl);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13.5px;
+      font-family: var(--font-ui);
+    }
+
+    /* 快捷动作：次级按钮 */
+    .quick-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border: none;
+      border-radius: var(--radius-ctl);
+      font-size: 14px;
+      font-weight: 550;
+      font-family: var(--font-ui);
+      cursor: pointer;
+      transition: all 180ms ease-out;
+    }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* 主按钮：唯一使用强调色的元素 */
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-hover); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover:not(:disabled) { color: var(--text); border-color: var(--border-strong); }
+
+    .btn-block { width: 100%; justify-content: center; margin-top: 16px; }
+
+    /* ============================================================
+       预览区：空态 / 加载 / 成功 / 失败
+       ============================================================ */
+    .preview-panel { min-height: 460px; display: flex; flex-direction: column; }
+    .preview-stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      text-align: center;
+      padding: 32px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-card);
+      background: var(--surface-muted);
+    }
+
+    /* 空态：极简图形 + 人话引导 + 一个动作 */
+    .state-art { color: var(--text-muted); opacity: 0.7; }
+    .state-title { font-size: 15px; font-weight: 600; }
+    .state-desc { font-size: 13.5px; color: var(--text-muted); max-width: 320px; }
+
+    /* 轻量 spinner：不遮罩、不打断 */
+    .spinner {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .progress-track {
+      width: 100%;
+      max-width: 360px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0;
+      background: var(--accent);
+      transition: width 200ms ease-out;
+    }
+    .progress-label { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-secondary); }
+
+    /* 状态条：功能色一律低透明度背景 */
+    .status-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      width: 100%;
+      text-align: left;
+      padding: 12px 14px;
+      border-radius: var(--radius-ctl);
+      font-size: 13.5px;
+      line-height: 1.55;
+    }
+    .status-banner.success { background: var(--success-soft); color: var(--success); }
+    .status-banner.warning { background: var(--warning-soft); color: var(--warning); }
+    .status-banner.error { background: var(--error-soft); color: var(--error); }
+    .status-banner .s-icon { flex-shrink: 0; margin-top: 1px; }
+
+    .result-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* 页脚 */
+    .site-footer {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 12.5px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* 隐藏辅助文本（无障碍） */
+    .sr-only {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    /* 页面级过渡 */
+    .page, .panel { animation: pageIn 300ms var(--ease-out); }
+    @keyframes pageIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ============================================================
+       响应式：768px 上下堆叠 / 480px 单列
+       ============================================================ */
+    @media (max-width: 768px) {
+      .tool-layout { grid-template-columns: 1fr; }
+      .page { padding: 24px 16px 56px; }
+      .preview-panel { min-height: 320px; }
+    }
+    @media (max-width: 480px) {
+      .nav-inner { gap: 16px; }
+      .nav-links a { padding: 7px 10px; font-size: 13px; }
+      .format-grid { grid-template-columns: repeat(3, 1fr); }
+      .settings-body { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 无障碍：跳过导航直达工具 -->
+  <a class="sr-only" href="#tool">跳到工具</a>
+
+  <!-- ===== 顶部导航：56px，Logo + 3 内链 + 主题切换 ===== -->
+  <header class="site-nav" role="banner">
+    <div class="nav-inner">
+      <a class="logo" href="index.html" aria-label="白鲨工具站首页">
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+          <rect width="20" height="20" rx="5" fill="var(--accent)"/>
+          <path d="M5 14 L10 5 L15 14 Z" fill="#fff"/>
+        </svg>
+        <span class="logo-text">白鲨工具站</span>
+      </a>
+      <nav class="nav-links" aria-label="主导航">
+        <a href="index.html">首页</a>
+        <a href="tools.html" class="active">工具</a>
+        <a href="nav.html">导航</a>
+      </nav>
+      <button class="theme-toggle" id="theme-toggle" aria-label="切换深色 / 浅色主题" title="切换主题">
+        <svg id="icon-sun" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <circle cx="8" cy="8" r="3.2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3 3l1.4 1.4M11.6 11.6L13 13M13 3l-1.4 1.4M4.4 11.6L3 13"/>
+        </svg>
+        <svg id="icon-moon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" style="display:none">
+          <path d="M13.5 9.5A6 6 0 0 1 6.5 2.5a6 6 0 1 0 7 7Z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== 主体：首屏即工具 ===== -->
+  <main class="page" id="tool">
+    <!-- 一行标题 + 一句副标题，不写多余文案 -->
+    <div class="tool-head">
+      <h1>全能格式转换器</h1>
+      <p>视频、音频、图片任意互转，全程在浏览器本地完成，文件不会上传。</p>
+    </div>
+
+    <!-- 工作区：左设置 / 右实时预览 -->
+    <div class="tool-layout">
+      <!-- 左侧：设置面板 -->
+      <section class="panel" aria-label="转换设置">
+        <h2 class="panel-title">源文件</h2>
+
+        <!-- 上传区：整块可点击，支持拖拽 -->
+        <div class="drop-zone" id="drop-zone" role="button" tabindex="0" aria-label="选择或拖入要转换的文件">
+          <input type="file" id="file-input" accept=".mp4,.3gp,.mpg,.mpeg,.avi,.wmv,.flv,.mov,.webm,.mkv,.jpg,.jpeg,.png,.bmp,.tif,.tiff,.ico,.gif,.tga,.webp,.mp3,.wma,.amr,.ogg,.aac,.wav,.m4a,.flac" aria-hidden="true" tabindex="-1">
+          <div id="drop-empty">
+            <div class="drop-icon">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path d="M9 12V3M9 3L5.5 6.5M9 3l3.5 3.5M3 11v3a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-3"/>
+              </svg>
+            </div>
+            <div class="drop-main">选择文件，或拖到此处</div>
+            <div class="drop-sub">支持 20+ 种视频 / 音频 / 图片格式</div>
+          </div>
+          <div id="drop-file" class="drop-file" style="display:none">
+            <span class="file-ext" id="file-ext">MP4</span>
+            <span id="file-name" style="flex:1">filename</span>
+            <span class="file-size" id="file-size"></span>
+            <button class="file-remove" id="file-remove" aria-label="移除已选文件">移除</button>
+          </div>
+        </div>
+
+        <!-- 输出格式：根据源文件类型动态生成 -->
+        <div id="format-section" style="display:none">
+          <label class="field-label" id="format-label" for="format-grid">输出格式</label>
+          <div class="format-grid" id="format-grid" role="radiogroup" aria-labelledby="format-label"></div>
+          <div id="format-hint" style="font-size:12px;color:var(--text-muted)"></div>
+        </div>
+
+        <!-- 更多设置：默认折叠 -->
+        <details class="more-settings" id="more-settings">
+          <summary>
+            <svg class="chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 2l4 4-4 4"/></svg>
+            更多设置
+          </summary>
+          <div class="settings-body">
+            <div>
+              <label class="field-label" for="opt-resolution">视频分辨率</label>
+              <select id="opt-resolution">
+                <option value="original">保持原样</option>
+                <option value="1080">1080p</option>
+                <option value="720">720p</option>
+                <option value="480">480p</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="opt-quality">音频码率</label>
+              <select id="opt-quality">
+                <option value="128">128 kbps</option>
+                <option value="192" selected>192 kbps</option>
+                <option value="320">320 kbps</option>
+              </select>
+            </div>
+          </div>
+        </details>
+
+        <!-- 快捷动作：动词开头 -->
+        <div class="quick-actions">
+          <button class="btn btn-ghost" id="btn-sample" aria-label="上传一张示例图片">上传示例</button>
+          <button class="btn btn-ghost" id="btn-clear" aria-label="清空当前文件与结果">清空</button>
+        </div>
+      </section>
+
+      <!-- 右侧：实时预览与状态 -->
+      <section class="panel preview-panel" aria-label="转换预览与进度">
+        <h2 class="panel-title">预览</h2>
+        <div class="preview-stage" id="preview-stage" role="status" aria-live="polite">
+          <!-- 内容由 JS 按状态渲染：空态 / 加载 / 成功 / 失败 -->
+        </div>
+        <button class="btn btn-primary btn-block" id="btn-convert" disabled>开始转换</button>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <span>© 2025 白鲨工具站 · 文件在本地转换，不上传服务器</span>
+    <span>引擎：FFmpeg WebAssembly</span>
+  </footer>
+
+  <script type="module">
+    /* ============================================================
+       全能格式转换器 - 逻辑层
+       - 主题切换（localStorage 持久化）
+       - 文件识别与格式映射
+       - ffmpeg.wasm 转换流水线
+       - 四态渲染（空/加载/成功/失败）
+       ============================================================ */
+    import { FFmpeg } from '../assets/vendor/ffmpeg/index.js';
+
+    /* ---------- 主题 ---------- */
+    const root = document.documentElement;
+    const sunIcon = document.getElementById('icon-sun');
+    const moonIcon = document.getElementById('icon-moon');
+    function applyTheme(theme) {
+      root.setAttribute('data-theme', theme);
+      const dark = theme === 'dark';
+      sunIcon.style.display = dark ? 'none' : '';
+      moonIcon.style.display = dark ? '' : 'none';
+      try { localStorage.setItem('bs-theme', theme); } catch (e) {}
+    }
+    let theme = 'light';
+    try { theme = localStorage.getItem('bs-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); } catch (e) {}
+    applyTheme(theme);
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      applyTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+
+    /* ---------- 格式表 ---------- */
+    const VIDEO_OUT = { mp4: 'MP4', '3gp': '3GP', avi: 'AVI', mpg: 'MPG', wmv: 'WMV', flv: 'FLV' };
+    const AUDIO_OUT = { mp3: 'MP3', wav: 'WAV', aac: 'AAC', ogg: 'OGG', wma: 'WMA', amr: 'AMR' };
+    const IMAGE_OUT = { jpg: 'JPG', png: 'PNG', bmp: 'BMP', gif: 'GIF', tif: 'TIF', tga: 'TGA', ico: 'ICO', webp: 'WebP' };
+    const VIDEO_EXT = ['mp4', '3gp', 'mpg', 'mpeg', 'avi', 'wmv', 'flv', 'mov', 'webm', 'mkv'];
+    const AUDIO_EXT = ['mp3', 'wma', 'amr', 'ogg', 'aac', 'wav', 'm4a', 'flac'];
+    const IMAGE_EXT = ['jpg', 'jpeg', 'png', 'bmp', 'tif', 'tiff', 'ico', 'gif', 'tga', 'webp'];
+    const TYPE_NAME = { video: '视频', audio: '音频', image: '图片' };
+
+    /* ---------- 状态与 DOM ---------- */
+    let current = null; // { file, type, ext, outExt }
+    let resultBlob = null;
+    let resultName = '';
+    let ffmpeg = null;
+
+    const $ = id => document.getElementById(id);
+    const dropZone = $('drop-zone'), fileInput = $('file-input');
+
+    function fmtSize(b) {
+      if (b < 1024 * 1024) return Math.round(b / 1024) + ' KB';
+      return (b / 1024 / 1024).toFixed(1) + ' MB';
+    }
+    function detectType(ext) {
+      if (VIDEO_EXT.includes(ext)) return 'video';
+      if (AUDIO_EXT.includes(ext)) return 'audio';
+      if (IMAGE_EXT.includes(ext)) return 'image';
+      return null;
+    }
+
+    /* ---------- 预览区四态渲染 ---------- */
+    function renderEmpty() {
+      $('preview-stage').innerHTML = `
+        <div class="state-art">
+          <svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+            <rect x="9" y="12" width="26" height="22" rx="4"/>
+            <path d="M17 22l4 4 7-8"/>
+          </svg>
+        </div>
+        <div class="state-title">选择文件，开始转换</div>
+        <div class="state-desc">视频转 MP3 / 图片转 PNG / 任意格式互转<br>转换过程只在你本机进行</div>
+        <button class="btn btn-ghost" id="state-open">选择文件</button>`;
+      $('state-open').addEventListener('click', () => fileInput.click());
+    }
+    function renderLoading(step) {
+      $('preview-stage').innerHTML = `
+        <div class="spinner" aria-hidden="true"></div>
+        <div class="state-title" id="loading-step">${step}</div>
+        <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+        <div class="progress-label" id="progress-label">0%</div>`;
+    }
+    function renderSuccess() {
+      $('preview-stage').innerHTML = `
+        <div class="status-banner success">
+          <svg class="s-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 8.5l3.5 3.5L13 5"/></svg>
+          <div>
+            <div style="font-weight:600">转换完成</div>
+            <div class="result-meta" id="result-meta"></div>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="state-download">下载 ${(resultName.split('.').pop() || '').toUpperCase()}</button>`;
+      $('result-meta').textContent = resultName + ' · ' + fmtSize(resultBlob.size);
+      $('state-download').addEventListener('click', downloadResult);
+    }
+    function renderError(msg) {
+      $('preview-stage').innerHTML = `
+        <div class="status-banner error">
+          <svg class="s-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="8" cy="8" r="6.2"/><path d="M8 5v3.5M8 11h.01"/></svg>
+          <div>
+            <div style="font-weight:600">转换失败</div>
+            <div>${msg}</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost" id="state-retry">重新选择文件</button>`;
+      $('state-retry').addEventListener('click', () => { clearAll(); renderEmpty(); });
+    }
+
+    /* ---------- 文件加载 ---------- */
+    function loadFile(file) {
+      const ext = (file.name.split('.').pop() || '').toLowerCase();
+      const type = detectType(ext);
+      if (!type) { renderError('不支持 .' + ext + ' 格式，请选择视频、音频或图片文件。'); return; }
+      current = { file, type, ext: ext === 'jpeg' ? 'jpg' : ext === 'tiff' ? 'tif' : ext, outExt: null };
+      resultBlob = null;
+      $('btn-convert').disabled = true;
+
+      $('drop-empty').style.display = 'none';
+      $('drop-file').style.display = 'flex';
+      $('file-ext').textContent = current.ext.toUpperCase();
+      $('file-name').textContent = file.name;
+      $('file-size').textContent = fmtSize(file.size);
+      dropZone.classList.add('has-file');
+
+      buildFormats(type);
+      renderEmpty();
+    }
+
+    function buildFormats(type) {
+      const outs = type === 'video' ? Object.assign({}, VIDEO_OUT, AUDIO_OUT) : type === 'audio' ? AUDIO_OUT : IMAGE_OUT;
+      const grid = $('format-grid');
+      grid.innerHTML = '';
+      Object.keys(outs).forEach(k => {
+        const btn = document.createElement('button');
+        btn.className = 'format-btn';
+        btn.textContent = outs[k];
+        btn.dataset.ext = k;
+        btn.setAttribute('role', 'radio');
+        btn.setAttribute('aria-checked', 'false');
+        btn.addEventListener('click', () => selectFormat(btn));
+        grid.appendChild(btn);
+      });
+      grid.querySelector('button').click();
+      $('format-section').style.display = 'block';
+      $('more-settings').open = false;
+    }
+
+    function selectFormat(btn) {
+      gridBtns().forEach(b => { b.classList.remove('selected'); b.setAttribute('aria-checked', 'false'); });
+      btn.classList.add('selected');
+      btn.setAttribute('aria-checked', 'true');
+      current.outExt = btn.dataset.ext;
+      $('btn-convert').disabled = false;
+      const isAudioOut = ['mp3', 'wav', 'aac', 'ogg', 'wma', 'amr'].includes(current.outExt);
+      $('format-hint').textContent = (current.type === 'video' && isAudioOut)
+        ? '将从视频中提取声音' : (current.outExt === current.ext ? '已选择与原文件相同的格式' : '');
+    }
+    const gridBtns = () => [...$('format-grid').querySelectorAll('.format-btn')];
+
+    /* ---------- ffmpeg 参数 ---------- */
+    function buildArgs(inName, outName) {
+      const type = current.type, outExt = current.outExt;
+      const audioCodec = { mp3: 'libmp3lame', wav: 'pcm_s16le', aac: 'aac', ogg: 'libvorbis', wma: 'wmav2', amr: 'libopencore_amrnb' }[outExt];
+      const bitrate = $('opt-quality').value + 'k';
+
+      // 音频输出（含视频提取音频）
+      if (audioCodec) {
+        const args = ['-i', inName, '-vn', '-c:a', audioCodec];
+        if (outExt === 'amr') args.push('-ar', '8000', '-ac', '1');
+        else if (outExt === 'mp3') args.push('-b:a', bitrate);
+        return args.concat([outName]);
+      }
+      // 视频输出
+      if (type === 'video') {
+        const vc = { mp4: 'libx264', '3gp': 'libx264', avi: 'mpeg4', mpg: 'mpeg1video', wmv: 'wmv2', flv: 'libx264' }[outExt];
+        const vca = { mp4: 'aac', '3gp': 'aac', avi: 'mp3', mpg: 'mp2', wmv: 'wmav2', flv: 'aac' }[outExt];
+        const args = ['-i', inName, '-c:v', vc, '-c:a', vca, '-movflags', '+faststart'];
+        const res = $('opt-resolution').value;
+        if (res !== 'original') args.push('-vf', 'scale=-2:' + res);
+        return args.concat([outName]);
+      }
+      // 图片输出
+      const args = ['-i', inName];
+      if (outExt === 'jpg') args.push('-q:v', '2');
+      return args.concat([outName]);
+    }
+
+    /* ---------- 引擎与转换 ---------- */
+    /* 运行时计算绝对地址：兼容根目录部署与子目录部署（如 GitHub Pages 的 /repo/ 路径） */
+    const CORE_BASE = new URL('../assets/vendor/ffmpeg-core/', location.href).href;
+
+    /* 优先加载压缩版核心（9.8MB，浏览器端解压）；不支持解压时回退原始版（30MB） */
+    async function resolveWasmURL() {
+      try {
+        const res = await fetch(CORE_BASE + 'ffmpeg-core.wasm.gz');
+        if (!res.ok) throw new Error('gz missing');
+        if (typeof DecompressionStream === 'undefined') throw new Error('unsupported');
+        const stream = res.body.pipeThrough(new DecompressionStream('gzip'));
+        const buf = await new Response(stream).arrayBuffer();
+        return URL.createObjectURL(new Blob([buf], { type: 'application/wasm' }));
+      } catch (e) {
+        return CORE_BASE + 'ffmpeg-core.wasm';
+      }
+    }
+
+    async function ensureFfmpeg() {
+      if (ffmpeg) return ffmpeg;
+      renderLoading('正在加载转换引擎（约 10MB，仅首次）…');
+      ffmpeg = new FFmpeg();
+      ffmpeg.on('progress', ev => {
+        if (typeof ev.progress === 'number') {
+          const pct = Math.min(99, Math.round(ev.progress * 100));
+          const fill = $('progress-fill');
+          if (fill) { fill.style.width = pct + '%'; $('progress-label').textContent = pct + '%'; }
+        }
+      });
+      const wasmURL = await resolveWasmURL();
+      await ffmpeg.load({ coreURL: CORE_BASE + 'ffmpeg-core.js', wasmURL: wasmURL });
+      return ffmpeg;
+    }
+
+    $('btn-convert').addEventListener('click', async () => {
+      if (!current || !current.outExt) return;
+      if (current.file.size > 300 * 1024 * 1024) { renderError('文件超过 300MB，浏览器内存可能不足。'); return; }
+      $('btn-convert').disabled = true;
+      renderLoading('正在准备…');
+      try {
+        const eng = await ensureFfmpeg();
+        const inName = 'input.' + current.ext;
+        const outName = 'output.' + current.outExt;
+        resultName = current.file.name.replace(/\.[^.]+$/, '') + '.' + current.outExt;
+        $('loading-step').textContent = '正在转换 ' + current.file.name + ' → ' + current.outExt.toUpperCase();
+        await eng.writeFile(inName, await current.file.arrayBuffer());
+        await eng.exec(buildArgs(inName, outName));
+        const data = await eng.readFile(outName);
+        resultBlob = new Blob([data.buffer], { type: 'application/octet-stream' });
+        renderSuccess();
+      } catch (e) {
+        console.error(e);
+        renderError((e && e.message ? e.message : '该格式可能不受浏览器版引擎支持，可换相邻格式试试。').slice(0, 140));
+      } finally {
+        $('btn-convert').disabled = false;
+      }
+    });
+
+    function downloadResult() {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(resultBlob);
+      a.download = resultName;
+      a.click();
+    }
+
+    /* ---------- 上传示例：程序化生成一张测试图片 ---------- */
+    $('btn-sample').addEventListener('click', () => {
+      const c = document.createElement('canvas');
+      c.width = 480; c.height = 300;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#2563EB';
+      ctx.fillRect(0, 0, 480, 300);
+      ctx.fillStyle = '#fff';
+      ctx.font = '600 28px "PingFang SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('白鲨工具站示例', 240, 120);
+      ctx.font = '400 16px "PingFang SC", sans-serif';
+      ctx.fillText('把它转成 JPG / WebP / GIF 试试', 240, 170);
+      c.toBlob(blob => {
+        loadFile(new File([blob], '示例图片.png', { type: 'image/png' }));
+      }, 'image/png');
+    });
+
+    /* ---------- 清空 ---------- */
+    function clearAll() {
+      current = null; resultBlob = null;
+      $('drop-empty').style.display = '';
+      $('drop-file').style.display = 'none';
+      dropZone.classList.remove('has-file');
+      $('format-section').style.display = 'none';
+      $('btn-convert').disabled = true;
+      fileInput.value = '';
+      renderEmpty();
+    }
+    $('btn-clear').addEventListener('click', clearAll);
+    $('file-remove').addEventListener('click', clearAll);
+
+    /* ---------- 上传区交互 ---------- */
+    fileInput.addEventListener('change', () => { if (fileInput.files.length) loadFile(fileInput.files[0]); });
+    dropZone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]);
+    });
+
+    /* 初始：空态 */
+    renderEmpty();
+  </script>
+</body>
+</html>

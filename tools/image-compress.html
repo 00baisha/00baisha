@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>图片压缩 - 白鲨工具站</title>
+  <meta name="description" content="在线图片压缩工具：本地压缩 JPG/PNG/WebP 图片，调节质量，对比压缩前后大小，免费无限次。图片不上传服务器。">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦈</text></svg>">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <main class="tool-main">
+    <div class="tool-breadcrumb"></div>
+    <div class="tool-head">
+      <h1>🗜️ 图片压缩</h1>
+      <p class="tool-desc">本地压缩图片，压缩前后大小一目了然。图片全程在你的浏览器里处理，<strong>不会上传到任何服务器</strong>。</p>
+    </div>
+
+    <div class="panel">
+      <div class="file-drop" id="drop">
+        <div class="fd-icon">🖼️</div>
+        <div class="fd-hint">点击选择图片，或直接把图片拖进来<br>支持 JPG / PNG / WebP</div>
+        <input type="file" id="file" accept="image/*">
+      </div>
+      <div class="form-grid" style="margin-top:16px">
+        <div>
+          <label class="panel-label">压缩质量：<span id="q-val">70%</span></label>
+          <input type="range" id="quality" min="10" max="100" value="70" style="width:100%">
+        </div>
+        <div>
+          <label class="panel-label">输出格式</label>
+          <select id="format" style="width:100%">
+            <option value="image/jpeg">JPG（体积最小）</option>
+            <option value="image/webp">WebP（更小且清晰）</option>
+            <option value="image/png">PNG（无损）</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="btn-download" disabled>⬇️ 下载压缩后的图片</button>
+        <button class="btn ghost" id="btn-reset">🔄 重新选择</button>
+      </div>
+      <div class="result-line" id="status"></div>
+    </div>
+
+    <div class="panel" id="compare" style="display:none">
+      <label class="panel-label">压缩效果对比</label>
+      <div class="stat-grid">
+        <div class="stat-item"><div class="si-num" id="orig-size" style="color:var(--text)">-</div><div class="si-label">压缩前大小</div></div>
+        <div class="stat-item"><div class="si-num" id="new-size">-</div><div class="si-label">压缩后大小</div></div>
+        <div class="stat-item"><div class="si-num" id="save-rate">-</div><div class="si-label">节省</div></div>
+      </div>
+      <img class="preview-img" id="preview" alt="压缩预览">
+    </div>
+  </main>
+
+  <script src="../assets/js/common.js"></script>
+  <script>
+    BS.injectBreadcrumb('图片压缩');
+
+    var drop = document.getElementById('drop');
+    var fileInput = document.getElementById('file');
+    var qualityEl = document.getElementById('quality');
+    var qVal = document.getElementById('q-val');
+    var formatEl = document.getElementById('format');
+    var downloadBtn = document.getElementById('btn-download');
+    var compare = document.getElementById('compare');
+    var preview = document.getElementById('preview');
+    var status = document.getElementById('status');
+
+    var current = null; // { dataUrl, size, name, type }
+
+    function fmtSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+
+    function loadFile(file) {
+      if (!file || !file.type.startsWith('image/')) { BS.toast('请选择图片文件'); return; }
+      var reader = new FileReader();
+      reader.onload = function () {
+        compress(reader.result, file.name, file.size, file.type);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function compress(dataUrl, name, origSize, origType) {
+      var img = new Image();
+      img.onload = function () {
+        var canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        var quality = qualityEl.value / 100;
+        var format = formatEl.value;
+        var outDataUrl = canvas.toDataURL(format, quality);
+        var outSize = Math.round((outDataUrl.length - outDataUrl.indexOf(',') - 1) * 3 / 4);
+        current = { dataUrl: outDataUrl, name: name, size: outSize, type: format };
+
+        document.getElementById('orig-size').textContent = fmtSize(origSize);
+        document.getElementById('new-size').textContent = fmtSize(outSize);
+        var rate = origSize ? Math.round((1 - outSize / origSize) * 100) : 0;
+        document.getElementById('save-rate').textContent = (rate > 0 ? '-' : '+') + Math.abs(rate) + '%';
+        preview.src = outDataUrl;
+        compare.style.display = 'block';
+        downloadBtn.disabled = false;
+        status.textContent = '✅ 压缩完成：' + fmtSize(origSize) + ' → ' + fmtSize(outSize);
+        status.style.color = '#16a34a';
+      };
+      img.onerror = function () { status.textContent = '❌ 图片加载失败'; status.style.color = '#ef4444'; };
+      img.src = dataUrl;
+    }
+
+    drop.addEventListener('click', function () { fileInput.click(); });
+    drop.addEventListener('dragover', function (e) { e.preventDefault(); drop.classList.add('drag'); });
+    drop.addEventListener('dragleave', function () { drop.classList.remove('drag'); });
+    drop.addEventListener('drop', function (e) {
+      e.preventDefault();
+      drop.classList.remove('drag');
+      if (e.dataTransfer.files.length) loadFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', function () { if (fileInput.files.length) loadFile(fileInput.files[0]); });
+    qualityEl.addEventListener('input', function () {
+      qVal.textContent = qualityEl.value + '%';
+      if (current) loadFile({ type: current.type, size: current.size });
+    });
+    formatEl.addEventListener('change', function () {
+      if (current && current.dataUrl) {
+        var img = new Image();
+        img.onload = function () {
+          var canvas = document.createElement('canvas');
+          canvas.width = img.width; canvas.height = img.height;
+          canvas.getContext('2d').drawImage(img, 0, 0);
+          var q = qualityEl.value / 100;
+          var fmt = formatEl.value;
+          var out = canvas.toDataURL(fmt, q);
+          var size = Math.round((out.length - out.indexOf(',') - 1) * 3 / 4);
+          current = { dataUrl: out, name: current.name, size: size, type: fmt };
+          document.getElementById('new-size').textContent = fmtSize(size);
+          preview.src = out;
+        };
+        img.src = current.dataUrl;
+      }
+    });
+    downloadBtn.addEventListener('click', function () {
+      if (!current) return;
+      var a = document.createElement('a');
+      a.href = current.dataUrl;
+      var ext = current.type.split('/')[1] === 'jpeg' ? 'jpg' : current.type.split('/')[1];
+      var base = current.name.replace(/\.[^.]+$/, '');
+      a.download = base + '-compressed.' + ext;
+      a.click();
+      BS.toast('开始下载 ⬇️');
+    });
+    document.getElementById('btn-reset').addEventListener('click', function () {
+      current = null; compare.style.display = 'none'; downloadBtn.disabled = true;
+      status.textContent = ''; fileInput.value = '';
+    });
+  </script>
+</body>
+</html>

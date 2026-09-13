@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>文字转图片 - 白鲨工具站</title>
+  <meta name="description" content="在线文字转图片工具：输入文字一键生成语录卡片/海报图片，可调字体颜色、背景色、尺寸，发小红书朋友圈必备。">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦈</text></svg>">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <main class="tool-main">
+    <div class="tool-breadcrumb"></div>
+    <div class="tool-head">
+      <h1>🖌️ 文字转图片</h1>
+      <p class="tool-desc">把文字变成一张精美的语录卡片/海报图片，发小红书、朋友圈、视频封面都合适。全部在本地生成，不会上传。</p>
+    </div>
+
+    <div class="panel">
+      <label class="panel-label">文字内容（换行分段，支持 emoji）</label>
+      <textarea id="text" class="input-area" style="min-height:130px" placeholder="输入你的文字，例如：&#10;✨ 生活不会亏待每一个努力的人 ✨&#10;&#10;—— 每天给自己加个油"></textarea>
+      <div class="form-grid" style="margin-top:14px">
+        <div>
+          <label class="panel-label">背景色</label>
+          <input type="color" id="bg-color" value="#0b7bd8" style="width:70px;height:40px;border:none;background:none;cursor:pointer">
+          <label style="font-size:13px;margin-left:8px"><input type="checkbox" id="bg-gradient" checked> 渐变</label>
+        </div>
+        <div>
+          <label class="panel-label">文字颜色</label>
+          <input type="color" id="text-color" value="#ffffff" style="width:70px;height:40px;border:none;background:none;cursor:pointer">
+        </div>
+        <div>
+          <label class="panel-label">字号</label>
+          <select id="font-size" style="width:100%">
+            <option value="28">小（28px）</option>
+            <option value="36" selected>中（36px）</option>
+            <option value="48">大（48px）</option>
+          </select>
+        </div>
+        <div>
+          <label class="panel-label">图片宽度</label>
+          <select id="width" style="width:100%">
+            <option value="600">600px（标准）</option>
+            <option value="800" selected>800px（高清）</option>
+            <option value="1080">1080px（小红书）</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="btn-gen">🖌️ 生成图片</button>
+        <button class="btn ghost" id="btn-download" disabled>⬇️ 下载图片</button>
+      </div>
+      <div class="result-line" id="status"></div>
+    </div>
+
+    <div class="panel" id="preview-panel" style="display:none">
+      <label class="panel-label">预览</label>
+      <img class="preview-img" id="preview" alt="生成预览">
+    </div>
+  </main>
+
+  <script src="../assets/js/common.js"></script>
+  <script>
+    BS.injectBreadcrumb('文字转图片');
+
+    var textEl = document.getElementById('text');
+    var bgColorEl = document.getElementById('bg-color');
+    var bgGradientEl = document.getElementById('bg-gradient');
+    var textColorEl = document.getElementById('text-color');
+    var fontSizeEl = document.getElementById('font-size');
+    var widthEl = document.getElementById('width');
+    var genBtn = document.getElementById('btn-gen');
+    var downloadBtn = document.getElementById('btn-download');
+    var statusEl = document.getElementById('status');
+    var previewPanel = document.getElementById('preview-panel');
+    var preview = document.getElementById('preview');
+
+    var resultUrl = null;
+
+    function generate() {
+      var text = textEl.value.trim();
+      if (!text) { BS.toast('请输入文字'); return; }
+      var width = parseInt(widthEl.value, 10);
+      var fontSize = parseInt(fontSizeEl.value, 10);
+      var fontFamily = '"PingFang SC", "Microsoft YaHei", sans-serif';
+
+      // 先量行数
+      var lines = text.split('\n');
+      var canvas = document.createElement('canvas');
+      var ctx = canvas.getContext('2d');
+      ctx.font = 'bold ' + fontSize + 'px ' + fontFamily;
+      var maxLineWidth = 0;
+      var wrapped = [];
+      lines.forEach(function (line) {
+        var current = '';
+        for (var i = 0; i < line.length; i++) {
+          var test = current + line[i];
+          if (ctx.measureText(test).width > width - fontSize * 2 && current) {
+            wrapped.push(current);
+            current = line[i];
+          } else {
+            current = test;
+          }
+        }
+        wrapped.push(current);
+      });
+      wrapped.forEach(function (l) {
+        maxLineWidth = Math.max(maxLineWidth, ctx.measureText(l).width);
+      });
+
+      var lineHeight = fontSize * 1.8;
+      var padding = fontSize * 1.5;
+      var height = padding * 2 + wrapped.length * lineHeight;
+      canvas.width = width;
+      canvas.height = Math.round(height);
+
+      var bg = ctx.createLinearGradient(0, 0, width, height);
+      var c = bgColorEl.value;
+      if (bgGradientEl.checked) {
+        bg.addColorStop(0, c);
+        bg.addColorStop(1, shade(c, -30));
+      } else {
+        bg.addColorStop(0, c);
+        bg.addColorStop(1, c);
+      }
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.fillStyle = textColorEl.value;
+      ctx.font = 'bold ' + fontSize + 'px ' + fontFamily;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      wrapped.forEach(function (l, i) {
+        ctx.fillText(l, width / 2, padding + fontSize / 2 + i * lineHeight);
+      });
+
+      resultUrl = canvas.toDataURL('image/png');
+      preview.src = resultUrl;
+      previewPanel.style.display = 'block';
+      downloadBtn.disabled = false;
+      statusEl.textContent = '✅ 生成完成：' + width + '×' + Math.round(height) + 'px';
+      statusEl.style.color = '#16a34a';
+    }
+
+    function shade(hex, percent) {
+      var n = parseInt(hex.replace('#', ''), 16);
+      var r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+      var t = percent < 0 ? 0 : 255;
+      var p = Math.abs(percent) / 100;
+      r = Math.round((t - r) * p + r);
+      g = Math.round((t - g) * p + g);
+      b = Math.round((t - b) * p + b);
+      return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+
+    genBtn.addEventListener('click', generate);
+    textEl.addEventListener('keydown', function (e) { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') generate(); });
+    [bgColorEl, bgGradientEl, textColorEl, fontSizeEl, widthEl].forEach(function (el) {
+      el.addEventListener('change', generate);
+    });
+    downloadBtn.addEventListener('click', function () {
+      if (!resultUrl) return;
+      var a = document.createElement('a');
+      a.href = resultUrl;
+      a.download = '文字卡片.png';
+      a.click();
+      BS.toast('开始下载 ⬇️');
+    });
+  </script>
+</body>
+</html>

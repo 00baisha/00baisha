@@ -1,0 +1,162 @@
+[
+  {
+    "id": "video-download",
+    "name": "视频无水印下载",
+    "desc": "粘贴链接下载无水印视频、提取文案和 MP3（支持B站）",
+    "category": "video",
+    "icon": "🎬",
+    "url": "tools/video-download.html",
+    "keywords": "视频 下载 无水印 去水印 文案 提取 mp3 bilibili B站 自媒体",
+    "featured": true
+  },
+  {
+    "id": "nine-grid",
+    "name": "九宫格切图",
+    "desc": "图片一键切成3×3九宫格，朋友圈小红书必备",
+    "category": "image",
+    "icon": "🔲",
+    "url": "tools/nine-grid.html",
+    "keywords": "九宫格 切图 朋友圈 拼图 截图 小红书",
+    "featured": true
+  },
+  {
+    "id": "image-watermark",
+    "name": "图片加水印",
+    "desc": "给图片加文字水印，位置/大小/透明度可调",
+    "category": "image",
+    "icon": "💧",
+    "url": "tools/image-watermark.html",
+    "keywords": "图片 水印 加水印 版权 文字水印 防盗图",
+    "featured": true
+  },
+  {
+    "id": "image-compress",
+    "name": "图片压缩",
+    "desc": "本地压缩图片大小，支持调节质量，不上传",
+    "category": "image",
+    "icon": "🗜️",
+    "url": "tools/image-compress.html",
+    "keywords": "图片 压缩 体积 减小 质量 上传限制",
+    "featured": true
+  },
+  {
+    "id": "text-to-speech",
+    "name": "文本转语音",
+    "desc": "文字一键朗读，支持中英日韩等多语言，配音必备",
+    "category": "text",
+    "icon": "🔊",
+    "url": "tools/text-to-speech.html",
+    "keywords": "文字 转语音 朗读 tts 配音 视频配音",
+    "featured": true
+  },
+  {
+    "id": "word-count",
+    "name": "字数统计",
+    "desc": "统计字数、字符数、行数、段落数",
+    "category": "text",
+    "icon": "📝",
+    "url": "tools/word-count.html",
+    "keywords": "字数 统计 字符 计数 文章 文案 标题",
+    "featured": true
+  },
+  {
+    "id": "qrcode",
+    "name": "二维码生成",
+    "desc": "把文字、链接生成二维码，支持中文，可下载",
+    "category": "image",
+    "icon": "📱",
+    "url": "tools/qrcode.html",
+    "keywords": "二维码 生成 qr 扫码 链接 引流 加好友",
+    "featured": true
+  },
+  {
+    "id": "qr-decode",
+    "name": "二维码解码",
+    "desc": "上传二维码图片立即识别内容，支持中文和截图粘贴",
+    "category": "image",
+    "icon": "📷",
+    "url": "tools/qr-decode.html",
+    "keywords": "二维码 解码 识别 扫描 解析 提取链接",
+    "featured": true
+  },
+  {
+    "id": "image-convert",
+    "name": "图片格式转换",
+    "desc": "PNG / JPG / WebP / BMP 格式互转",
+    "category": "image",
+    "icon": "🖼️",
+    "url": "tools/image-convert.html",
+    "keywords": "图片 格式 转换 png jpg webp 平台要求",
+    "featured": true
+  },
+  {
+    "id": "color",
+    "name": "颜色工具",
+    "desc": "取色器 + HEX/RGB/HSL 互转 + 常用色板",
+    "category": "image",
+    "icon": "🎨",
+    "url": "tools/color.html",
+    "keywords": "颜色 取色器 hex rgb hsl 色板 调色 封面配色",
+    "featured": true
+  },
+  {
+    "id": "markdown",
+    "name": "Markdown 预览",
+    "desc": "左侧写右侧实时预览，写文章写README必备",
+    "category": "text",
+    "icon": "📝",
+    "url": "tools/markdown.html",
+    "keywords": "markdown 预览 编辑器 md 排版 公众号",
+    "featured": true
+  },
+  {
+    "id": "text-diff",
+    "name": "文本对比",
+    "desc": "对比两段文本差异，高亮增删改",
+    "category": "text",
+    "icon": "🔀",
+    "url": "tools/text-diff.html",
+    "keywords": "文本 对比 diff 差异 比较 文案修改",
+    "featured": true
+  },
+  {
+    "id": "video-to-gif",
+    "name": "视频转 GIF",
+    "desc": "视频一键转动态表情包/GIF 动图，帧率尺寸可调",
+    "category": "convert",
+    "icon": "🎞️",
+    "url": "tools/video-to-gif.html",
+    "keywords": "视频 gif 动图 表情包 转换 动态图",
+    "featured": true
+  },
+  {
+    "id": "image-merge",
+    "name": "图片拼接",
+    "desc": "多张图片拼成纵向/横向长图，长图拼接必备",
+    "category": "convert",
+    "icon": "🧩",
+    "url": "tools/image-merge.html",
+    "keywords": "图片 拼接 长图 合成 纵向 横向",
+    "featured": true
+  },
+  {
+    "id": "text-to-image",
+    "name": "文字转图片",
+    "desc": "文字一键生成语录卡片/海报图，配色字号可调",
+    "category": "convert",
+    "icon": "🖌️",
+    "url": "tools/text-to-image.html",
+    "keywords": "文字 转图片 语录 卡片 海报 生成图片",
+    "featured": true
+  },
+  {
+    "id": "format-convert",
+    "name": "全能格式转换器",
+    "desc": "视频/音频/图片任意互转，支持20+种格式",
+    "category": "convert",
+    "icon": "🔄",
+    "url": "tools/format-convert.html",
+    "keywords": "格式转换 转换器 mp4 avi wmv mp3 图片 视频 音频 全能",
+    "featured": true
+  }
+]

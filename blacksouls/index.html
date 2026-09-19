@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BLACK SOULS 手表版 —— 智能手表上的同人文字冒险</title>
+<meta name="description" content="把 RPG Maker 同人 ADV《BLACK SOULS》移植到 vivo 蓝河 BlueOS 手表应用。iQOO WATCH GT 方形表盘，表冠操作、逐字取名、分支出身。可在网页里直接游玩还原版。非官方同人移植，原作 by 寿司勇者トロ。">
+<meta name="author" content="击球手">
+<meta name="theme-color" content="#0b0b0d">
+<meta property="og:type" content="website">
+<meta property="og:title" content="BLACK SOULS 手表版 —— 智能手表上的同人文字冒险">
+<meta property="og:description" content="把同人 ADV 移植进蓝河手表应用：表冠操作、逐字取名、分支出身。网页可玩还原版。">
+<meta property="og:image" content="assets/img/device/title.jpg">
+<link rel="icon" href="assets/img/ui/app-icon-64.png" sizes="64x64">
+<link rel="apple-touch-icon" href="assets/img/ui/app-icon-180.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<a class="skip" href="#play">跳到可玩区</a>
+
+<!-- ==================== 1. Hero ==================== -->
+<header class="hero" id="top">
+  <div class="wrap hero__grid">
+    <div class="hero__text">
+      <p class="eyebrow">vivo 蓝河 BlueOS · 手表应用</p>
+      <h1 class="hero__title">BLACK SOULS</h1>
+      <p class="hero__sub">智能手表上的同人文字冒险</p>
+      <p class="hero__lead">
+        把一部 RPG Maker 的同人 ADV 移植进手表应用：一块方形屏幕、一颗表冠，
+        走完开场序章 —— 遇见爱丽丝、报上名字、选一个出身，然后故事开始。
+      </p>
+      <ul class="hero__specs">
+        <li>iQOO WATCH GT</li>
+        <li>方形表盘 390 × 450</li>
+        <li>v1.0.1</li>
+      </ul>
+      <p class="hero__actions">
+        <a class="btn btn--primary" href="#play">▶ 开始游戏</a>
+        <a class="btn" href="#how">怎么做的</a>
+      </p>
+      <p class="legal">
+        非官方同人移植 · 原作《BLACK SOULS》by 寿司勇者トロ · 由 <strong>击球手</strong> 制作
+      </p>
+    </div>
+
+    <div class="hero__device">
+      <div class="watch">
+        <div class="watch__bezel">
+          <img class="watch__shot" src="assets/img/device/title.jpg" width="390" height="450"
+               alt="手表实机截图：BLACK SOULS 标题界面，菜单为 NEW GAME / CONTINUE / END">
+        </div>
+        <span class="watch__crown" aria-hidden="true"></span>
+      </div>
+      <p class="device-cap">手表实机 · 标题界面</p>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ==================== 2. 这是什么 ==================== -->
+<section class="sec" id="about">
+  <div class="wrap">
+    <h2 class="sec__title">这是什么</h2>
+    <p class="sec__lead">
+      一个跑在方形表盘上的文字冒险。全部操作只有两个动作：<b>滚</b> 和 <b>点</b>。
+    </p>
+    <ul class="cards">
+      <li class="card">
+        <h3>表冠操作</h3>
+        <p>上下滚动切换选项，点一下确定。手表版把表冠的旋转事件直接接到了菜单光标上，
+           所以整局游戏不需要任何按钮。</p>
+      </li>
+      <li class="card">
+        <h3>逐字取名</h3>
+        <p>中文没有软键盘可用，于是做了整屏字库：一页 48 个字，配「決定 / 削除 / 翻页」，
+           第三页是英数字。名字最长 6 个字。</p>
+      </li>
+      <li class="card">
+        <h3>分支出身</h3>
+        <p>骑士、盗贼、魔术师三选一。选完当场换掉桌子左边那个「你」的形态 ——
+           这是整个序章最有辨识度的一步。</p>
+      </li>
+    </ul>
+    <p class="note">
+      <strong>运行要求：</strong>iQOO WATCH GT（方形表盘，390 × 450）· 系统为蓝河 BlueOS ·
+      当前版本 v1.0.1。个人非商业同人作品，不提供安装包。
+    </p>
+  </div>
+</section>
+
+<!-- ==================== 3. 开始游戏 ==================== -->
+<section class="sec sec--play" id="play">
+  <div class="wrap">
+    <h2 class="sec__title">开始游戏</h2>
+    <p class="sec__lead">
+      下面这块表是把手表版在浏览器里还原了一遍，界面素材用的就是应用里的原始图片。
+      点一下表盘，然后就能开始。
+    </p>
+
+    <div class="play">
+      <div class="play__device">
+        <div class="watch watch--play">
+          <div class="watch__bezel">
+            <div class="screen-wrap" id="screenWrap">
+              <div class="stage" id="stage" tabindex="0" role="application"
+                   aria-label="可玩的 BLACK SOULS 手表界面：滚动选择，点击确定">
+
+                <!-- 标题界面 -->
+                <div class="scene" id="titleLayer">
+                  <img class="fill" src="assets/img/ui/bg-title.jpg" width="466" height="538" alt="">
+                  <div class="menu-patch" id="menuPatch" aria-hidden="true"></div>
+                  <img class="menu" src="assets/img/ui/menu-box.png" width="239" height="141"
+                       alt="标题菜单：NEW GAME / CONTINUE / END">
+                  <img class="tcursor" id="titleCursor" src="assets/img/ui/title-cursor.png"
+                       width="223" height="39" alt="">
+                </div>
+
+                <!-- 剧情界面 -->
+                <div class="scene" id="storyLayer" hidden>
+                  <img class="fill" src="assets/img/game/scene-room.jpg" width="466" height="538" alt="">
+                  <img class="sprite" id="spriteKnight" data-src="assets/img/game/sprite-knight.png"
+                       width="232" height="114" alt="" hidden>
+                  <img class="sprite" id="spriteThief" data-src="assets/img/game/sprite-thief.png"
+                       width="232" height="114" alt="" hidden>
+                  <img class="sprite" id="spriteMage" data-src="assets/img/game/sprite-mage.png"
+                       width="232" height="114" alt="" hidden>
+                  <img class="fill" id="uiDialog" src="assets/img/game/ui-dialog.png" width="466" height="538" alt="">
+                  <img class="fill" id="uiChoice2" data-src="assets/img/game/ui-choice2.png"
+                       width="466" height="538" alt="" hidden>
+                  <img class="fill" id="uiChoice3" data-src="assets/img/game/ui-choice3.png"
+                       width="466" height="538" alt="" hidden>
+                  <img class="fill" id="uiName0" data-src="assets/img/game/ui-name0.png"
+                       width="466" height="538" alt="" hidden>
+                  <img class="fill" id="uiName1" data-src="assets/img/game/ui-name1.png"
+                       width="466" height="538" alt="" hidden>
+                  <img class="fill" id="uiName2" data-src="assets/img/game/ui-name2.png"
+                       width="466" height="538" alt="" hidden>
+                  <img class="bust" id="bust" src="assets/img/game/alice-bust.png" width="115" height="115" alt="">
+                  <img class="rowcursor" id="rowCursor" src="assets/img/ui/row-hl-small.png"
+                       width="179" height="36" alt="" hidden>
+                  <img class="cellcursor" id="cellCursor" src="assets/img/ui/cell-hl.png"
+                       width="60" height="51" alt="" hidden>
+                  <img class="nextarrow" id="nextArrow" src="assets/img/game/arrow-next.png"
+                       width="26" height="14" alt="" hidden>
+                  <canvas class="cv" id="watchCanvas" aria-hidden="true"></canvas>
+                </div>
+
+                <div class="fade" id="fade" aria-hidden="true"></div>
+              </div>
+            </div>
+          </div>
+          <span class="watch__crown" aria-hidden="true"></span>
+        </div>
+
+        <p class="play__status" id="watchStatus" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="play__side">
+        <h3 class="play__h">怎么玩</h3>
+        <ul class="keys">
+          <li><kbd>滚轮</kbd> / <kbd>↑</kbd><kbd>↓</kbd> / 上下滑 —— 表冠滚动</li>
+          <li><kbd>点击</kbd> / <kbd>Enter</kbd> / <kbd>空格</kbd> —— 确定</li>
+          <li>对话进行中：点一下可以跳过打字机，立刻显示整句</li>
+        </ul>
+
+        <p class="play__note">
+          <strong>浏览器还原版</strong> · 内容与手表实机一致，界面素材取自应用原图，但<b>不是真机运行</b>。
+        </p>
+        <p class="play__note">
+          与实机的两处差异：输入方式由表冠旋转改为滚轮 / 按键 / 触摸；
+          <b>CONTINUE 会读取浏览器本地进度</b>（手表版没有存档功能）。
+        </p>
+
+        <p class="play__tools">
+          <button class="btn btn--ghost" type="button" id="btnRestart">重玩</button>
+          <button class="btn btn--ghost" type="button" id="btnBgm" aria-pressed="false">♪ 播放 BGM</button>
+        </p>
+        <p class="play__hint">BGM 用的是应用里的 <code>title.mp3</code>，只在你按下按钮后播放。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 4. 序章四步 ==================== -->
+<section class="sec" id="steps">
+  <div class="wrap">
+    <h2 class="sec__title">序章四步</h2>
+    <p class="sec__lead">手表实机截图，按游玩顺序排列。</p>
+    <ol class="shots">
+      <li class="shot">
+        <img src="assets/img/device/title.jpg" width="390" height="450" loading="lazy"
+             alt="手表实机：标题菜单界面">
+        <p class="shot__n">01</p>
+        <h3>标题菜单</h3>
+        <p>NEW GAME / CONTINUE / END，光标跟着表冠走，点一下进入。</p>
+      </li>
+      <li class="shot">
+        <img src="assets/img/device/dialog.jpg" width="390" height="450" loading="lazy"
+             alt="手表实机：爱丽丝对话界面">
+        <p class="shot__n">02</p>
+        <h3>对话推进</h3>
+        <p>台词逐字打出，立绘压在对话框内左侧，背景是图书馆长桌。</p>
+      </li>
+      <li class="shot">
+        <img src="assets/img/device/name-input.jpg" width="390" height="450" loading="lazy"
+             alt="手表实机：逐字取名界面">
+        <p class="shot__n">03</p>
+        <h3>逐字取名</h3>
+        <p>48 字一格一页，右侧「決定 / 削除 / 翻页」，顶部实时显示已选的字。</p>
+      </li>
+      <li class="shot">
+        <img src="assets/img/device/ending.jpg" width="390" height="450" loading="lazy"
+             alt="手表实机：序章收尾台词">
+        <p class="shot__n">04</p>
+        <h3>故事开始</h3>
+        <p>选完出身确认形态，序章以「故事，要开始了——」收尾。</p>
+      </li>
+    </ol>
+
+    <figure class="videoslot">
+      <div class="videoslot__frame" aria-hidden="true"><span>▶</span></div>
+      <figcaption>实机演示录屏 · 录制中（待补）</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ==================== 5. 原版对照 ==================== -->
+<section class="sec sec--dense" id="origin">
+  <div class="wrap">
+    <h2 class="sec__title">原版对照</h2>
+    <p class="sec__lead">
+      手表版的界面素材全部从原版画面里抠出：整屏 UI 做成图层，文字用 canvas 重画。
+      下面是 <b>原版 PC 画面</b>，顺序与序章流程一致 —— 点开可看大图。
+    </p>
+    <ul class="gallery" id="gallery">
+      <li><button type="button" class="thumb" data-full="assets/img/pc/game-01.jpg" data-cap="原版 PC 画面 · 爱丽丝「贵安」">
+        <img src="assets/img/pc/game-01.jpg" width="642" height="507" loading="lazy" alt="原版 PC 画面：爱丽丝说「贵安」"></button></li>
+      <li><button type="button" class="thumb" data-full="assets/img/pc/game-02.jpg" data-cap="原版 PC 画面 · 被选作主人公">
+        <img src="assets/img/pc/game-02.jpg" width="642" height="507" loading="lazy" alt="原版 PC 画面：恭喜您被选作主人公"></button></li>
+      <li><button type="button" class="thumb" data-full="assets/img/pc/game-03.jpg" data-cap="原版 PC 画面 · 请告诉我您的名字">
+        <img src="assets/img/pc/game-03.jpg" width="642" height="507" loading="lazy" alt="原版 PC 画面：请告诉我您的名字"></button></li>
+      <li><button type="button" class="thumb" data-full="assets/img/pc/game-04.jpg" data-cap="原版 PC 画面 · 逐字取名">
+        <img src="assets/img/pc/game-04.jpg" width="642" height="507" loading="lazy" alt="原版 PC 画面：逐字取名界面"></button></li>
+      <li><button type="button" class="thumb" data-full="assets/img/pc/game-05.jpg" data-cap="原版 PC 画面 · 逐字取名">
+        <img src="assets/img/pc/game-05.jpg" width="642" height="507" loading="lazy" alt="原版 PC 画面：逐字取名界面"></button></li>
+      <li><button type="button" class="thumb" data-full="assets/img/pc/game-06.jpg" data-cap="原版 PC 画面 · 名字确认（是 / 否）">
+        <img src="assets/img/pc/game-06.jpg" width="642" height="507" loading="lazy" alt="原版 PC 画面：确认名字"></button></li>
+      <li><button type="button" class="thumb" data-full="assets/img/pc/game-07.jpg" data-cap="原版 PC 画面 · 名字的回应">
+        <img src="assets/img/pc/game-07.jpg" width="642" height="507" loading="lazy" alt="原版 PC 画面：对名字的回应"></button></li>
+      <li><button type="button" class="thumb" data-full="assets/img/pc/game-08.jpg" data-cap="原版 PC 画面 · 请选择出身">
+        <img src="assets/img/pc/game-08.jpg" width="642" height="507" loading="lazy" alt="原版 PC 画面：请选择出身"></button></li>
+      <li><button type="button" class="thumb" data-full="assets/img/pc/game-09.jpg" data-cap="原版 PC 画面 · 三选一：骑士 / 盗贼 / 魔术师">
+        <img src="assets/img/pc/game-09.jpg" width="642" height="507" loading="lazy" alt="原版 PC 画面：出身三选一"></button></li>
+      <li><button type="button" class="thumb" data-full="assets/img/pc/game-10.jpg" data-cap="原版 PC 画面 · 形态确认">
+        <img src="assets/img/pc/game-10.jpg" width="642" height="507" loading="lazy" alt="原版 PC 画面：形态确认"></button></li>
+      <li><button type="button" class="thumb" data-full="assets/img/pc/game-11.jpg" data-cap="原版 PC 画面 · 形态确认">
+        <img src="assets/img/pc/game-11.jpg" width="642" height="507" loading="lazy" alt="原版 PC 画面：形态确认"></button></li>
+      <li><button type="button" class="thumb" data-full="assets/img/pc/game-12.jpg" data-cap="原版 PC 画面 · 形态确认">
+        <img src="assets/img/pc/game-12.jpg" width="642" height="507" loading="lazy" alt="原版 PC 画面：形态确认"></button></li>
+      <li><button type="button" class="thumb" data-full="assets/img/pc/game-extra.jpg" data-cap="原版 PC 画面 · 出身选择的确认窗口">
+        <img src="assets/img/pc/game-extra.jpg" width="642" height="507" loading="lazy" alt="原版 PC 画面：出身选择确认窗口"></button></li>
+      <li><button type="button" class="thumb" data-full="assets/img/pc/pc-title-a.jpg" data-cap="原版 PC 标题 · NEW GAME 选中">
+        <img src="assets/img/pc/pc-title-a.jpg" width="642" height="484" loading="lazy" alt="原版 PC 标题界面：NEW GAME 选中"></button></li>
+      <li><button type="button" class="thumb" data-full="assets/img/pc/pc-title-b.jpg" data-cap="原版 PC 标题 · CONTINUE 选中">
+        <img src="assets/img/pc/pc-title-b.jpg" width="641" height="480" loading="lazy" alt="原版 PC 标题界面：CONTINUE 选中"></button></li>
+      <li><button type="button" class="thumb" data-full="assets/img/pc/pc-title-c.jpg" data-cap="原版 PC 标题 · 无选中">
+        <img src="assets/img/pc/pc-title-c.jpg" width="642" height="481" loading="lazy" alt="原版 PC 标题界面：无选中项"></button></li>
+    </ul>
+    <p class="note note--tight">
+      以上均为原版 PC 画面，仅作移植对照使用；版权归原作者 寿司勇者トロ 所有。
+    </p>
+  </div>
+</section>
+
+<!-- ==================== 6. 怎么做的 ==================== -->
+<section class="sec" id="how">
+  <div class="wrap">
+    <h2 class="sec__title">怎么做的</h2>
+    <p class="sec__lead">技术细节收在这里，想看的点开。</p>
+
+    <details class="fold">
+      <summary>工程结构：一个蓝河手表应用</summary>
+      <div class="fold__body">
+        <p>
+          本体是 vivo 蓝河（BlueOS）的手表应用，页面用 <code>.ux</code> 单文件组件写，
+          清单是 <code>manifest.json</code>：包名 <code>blacksouls.demo</code>，
+          设计基准宽 <code>466</code>，设备类型 <code>watch</code> / <code>watch-square</code>。
+        </p>
+        <pre class="code"><code>src/
+├── app.ux                应用入口：全局 BGM 单例
+├── manifest.json         包名 / 版本 / 设备类型 / 路由
+├── game/
+│   └── story.js          剧本数据（说话人、台词、选项、跳转）
+├── pages/
+│   ├── Title/            标题菜单 + 表冠选单
+│   └── Story/            剧情页：对话 / 选项 / 取名
+└── assets/
+    ├── images/           标题底图、菜单框、光标
+    ├── images/scene/     场景底板、立绘、整套 UI 图层
+    └── audio/title.mp3   主界面 BGM</code></pre>
+        <p>
+          剧情不是写死在代码里的：<code>story.js</code> 是一串步骤
+          （<code>say</code> / <code>choice</code> / <code>input</code> / <code>sprite</code> /
+          <code>set</code> / <code>goto</code> / <code>end</code>），页面只负责播放。
+          改剧情不用动逻辑，网页版也沿用了同一份数据。
+        </p>
+      </div>
+    </details>
+
+    <details class="fold">
+      <summary>界面素材是怎么来的：整屏图层 + canvas 画字</summary>
+      <div class="fold__body">
+        <p>
+          手表版没有原版的工程文件，于是从原版截图里把界面「抠」成整屏图层：
+          对话框、两行 / 三行选项框、取名界面各做成一张 390 × 450 的 PNG，
+          叠在场景底板上。图层自带透明通道，所以换界面只是切换显示哪一张。
+        </p>
+        <p>
+          文字全部画在 canvas 上，用绝对坐标定位 —— 因为手表端那套框架不支持
+          <code>position: absolute</code>，用布局引擎挪不动字。字号、行高、光标位置
+          全部按设计单位写死，网页版照搬了这些常量。
+        </p>
+        <p>
+          取名界面的 48 个字格和「決定 / 削除 / 翻页」是<b>烘进图片里</b>的，不重画；
+          只有顶部那行输入的字实时绘制。这三页字库（中文两页 + 英数一页）与代码里的
+          字表逐字对应，网页版的点击命中就是按同一张字表算的。
+        </p>
+      </div>
+    </details>
+
+    <details class="fold">
+      <summary>BGM 的无缝循环：应用级单例 + 轮询</summary>
+      <div class="fold__body">
+        <p>
+          音频播放器是全局单例，放在应用入口而不是页面里 —— 这样标题页和剧情页之间
+          来回跳转时音乐不会断，退到后台才暂停，退出应用自动停。
+        </p>
+        <p>
+          播放接口没有循环参数，所以循环要自己实现：每 200 ms 查一次播放状态，
+          在<b>还剩 0.2 秒</b>的时候就把进度拉回开头重放。音频文件的尾巴和开头做过交叉淡化，
+          这样接缝处几乎听不出断点，比「播完了再重放」顺得多。
+        </p>
+      </div>
+    </details>
+
+    <details class="fold">
+      <summary>打包与真机安装</summary>
+      <div class="fold__body">
+        <p>
+          用 BlueOS Studio 编译成 <code>.rpk</code> 后签名安装到手表。发布构建需要证书，
+          命令行 <code>install</code> 加 <code>send</code> 两步把包推进设备。
+          下面这张是打包与安装时的界面。
+        </p>
+        <figure class="figure">
+          <img src="assets/img/dev/blueos-studio.png" width="1920" height="1040" loading="lazy"
+               alt="BlueOS Studio 打包配置界面与真机安装日志">
+          <figcaption>开发过程记录 · BlueOS Studio 打包配置与真机安装日志</figcaption>
+        </figure>
+      </div>
+    </details>
+
+    <details class="fold">
+      <summary>网页还原版做了哪些还原，有哪些差异</summary>
+      <div class="fold__body">
+        <ul class="ticks">
+          <li>坐标系、图层位置、字号、行高、光标位置：照搬应用里的常量（设计单位 466 × 538）</li>
+          <li>界面素材：全部使用应用内的原始图片，未重绘</li>
+          <li>对话换行：同样是每行 14 字、最多 4 行；打字机速度同样是 50 ms 一个字</li>
+          <li>取名：同一张字表、同样的 48 格分页、同样最多 6 字</li>
+          <li>出身三选一会即时切换立绘，与实机一致</li>
+          <li>差异一：表冠旋转改为滚轮 / 方向键 / 触摸滑动</li>
+          <li>差异二：CONTINUE 读取浏览器本地进度（手表版没有存档）</li>
+          <li>差异三：修正了标题菜单 END 一行缺失的底色（抠图时漏掉的一块）</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</section>
+
+</main>
+
+<!-- ==================== 7. 页脚 ==================== -->
+<footer class="foot">
+  <div class="wrap">
+    <p class="foot__legal">
+      《BLACK SOULS》手表版是<b>非官方的个人同人移植作品</b>，
+      原作《BLACK SOULS》版权归原作者 <b>寿司勇者トロ</b> 所有。
+      本站与原作者、iQOO、vivo、蓝河 BlueOS 均无隶属或授权关系，
+      未使用上述任何一方的官方标识。
+    </p>
+    <p class="foot__meta">
+      由 <b>击球手</b> 制作 · 个人非商业作品 · 最后更新 2026-09-19
+    </p>
+    <p class="foot__top"><a href="#top">回到顶部</a></p>
+  </div>
+</footer>
+
+<!-- 大图查看 -->
+<div class="lightbox" id="lightbox" hidden>
+  <button class="lightbox__close" type="button" id="lightboxClose" aria-label="关闭大图">✕ 关闭</button>
+  <figure class="lightbox__fig">
+    <img id="lightboxImg" alt="">
+    <figcaption id="lightboxCap"></figcaption>
+  </figure>
+</div>
+
+<script src="story.js"></script>
+<script src="game.js"></script>
+<script src="main.js"></script>
+</body>
+</html>

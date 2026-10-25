@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>腕上学习 · 试玩</title>
+<style>
+  :root {
+    --bg: #000;
+    --surface: #1a1a1c;
+    --item: #26262a;
+    --item-2: #33333a;
+    --line: #34343a;
+    --text: #fff;
+    --dim: #c8c8d0;
+    --muted: #9a9aa4;
+    --accent: #0a84ff;
+  }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #fbfbf9;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body { display: flex; align-items: center; justify-content: center; }
+
+  .watch {
+    width: 466px;
+    height: 466px;
+    border-radius: 50%;
+    background: var(--bg);
+    overflow: hidden;
+    position: relative;
+    color: var(--text);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .hidden { display: none !important; }
+
+  .backbtn {
+    position: absolute;
+    top: 56px;
+    left: 76px;
+    width: 46px;
+    height: 46px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .1);
+    color: #fff;
+    font: 26px/1 -apple-system, sans-serif;
+    cursor: pointer;
+    z-index: 2;
+  }
+  .backbtn:active { background: rgba(255, 255, 255, .2); }
+
+  /* ---------- 通用结构 ---------- */
+  .view { position: absolute; inset: 0; display: flex; flex-direction: column; }
+
+  .scroll {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+  }
+  .scroll::-webkit-scrollbar { width: 0; }
+
+  .body { padding: 0 34px 44px; }
+
+  .hdr {
+    padding: 56px 30px 8px;
+    text-align: center;
+    flex: none;
+  }
+
+  .title { font-size: 36px; font-weight: 600; line-height: 1.2; }
+  .sub { margin-top: 4px; font-size: 22px; color: var(--dim); }
+  .sub.accent { color: #ffd60a; }
+
+  .row {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 104px;
+    margin-bottom: 12px;
+    padding: 12px 28px;
+    border-radius: 30px;
+    background: var(--item);
+    cursor: pointer;
+  }
+  .row:active { background: var(--item-2); }
+
+  .row b { font-size: 40px; font-weight: 500; line-height: 1.2; }
+  .row span { margin-top: 2px; font-size: 22px; color: var(--dim); }
+
+  .row.cont { background: #12324f; }
+  .row.cont b { color: #8cc4ff; }
+
+  .chapter {
+    padding: 14px 10px 6px;
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .pt {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 100px;
+    margin-bottom: 10px;
+    padding: 10px 28px;
+    border-radius: 30px;
+    background: var(--item);
+    cursor: pointer;
+  }
+  .pt:active { background: var(--item-2); }
+  .pt b { font-size: 40px; font-weight: 500; }
+  .pt.read b { color: var(--dim); }
+  .pt em { font-size: 22px; font-style: normal; color: var(--muted); }
+
+  /* ---------- 阅读页 ---------- */
+  .reader .hdr { padding-top: 52px; }
+  .scrollwrap { position: relative; flex: 1; min-height: 0; }
+  .scrollwrap .scroll { position: absolute; inset: 0; }
+  .scrollwrap .fade {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 64px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0), #000);
+    pointer-events: none;
+  }
+  .reader-title { font-weight: 600; line-height: 1.15; }
+
+  .lines { padding: 0 24px 30px; text-align: center; }
+  .ln { color: var(--text); line-height: 1.32; padding: 3px 0; word-break: break-word; }
+  .tr { color: #8cc4ff; font-size: 24px; line-height: 1.4; padding: 1px 0 9px; }
+  .note { margin-top: 16px; font-size: 30px; color: var(--dim); }
+  .extra { margin-top: 8px; font-size: 26px; color: var(--dim); }
+
+  .foot {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 6px 12px 68px;
+  }
+
+  .btn {
+    height: 74px;
+    padding: 0 16px;
+    white-space: nowrap;
+    border: 0;
+    border-radius: 37px;
+    background: var(--item);
+    color: var(--text);
+    font-size: 26px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .btn:active { background: var(--item-2); }
+  .btn.primary { background: var(--accent); font-size: 30px; }
+  .btn.small { width: 56px; padding: 0; font-size: 30px; }
+  .btn.on { background: #1d4b7a; color: #8cc4ff; }
+  .btn.off { background: #16161a; color: var(--muted); }
+
+  /* ---------- 设置 ---------- */
+  .card {
+    margin: 0 4px 16px;
+    padding: 20px 26px 22px;
+    border-radius: 30px;
+    background: #131317;
+    border: 1px solid #24242c;
+  }
+  .card-head { display: flex; align-items: baseline; justify-content: space-between; }
+  .card-head b { font-size: 34px; font-weight: 500; }
+  .card-head span { font-size: 28px; color: #c4b5fd; }
+
+  .track {
+    position: relative;
+    height: 56px;
+    margin-top: 16px;
+    border-radius: 28px;
+    background: linear-gradient(to right, #2a1050, #5b21b6, #7c3aed, #c084fc);
+  }
+  .knob {
+    position: absolute;
+    top: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #f5e7d3;
+    border: 2px solid #fffaf0;
+    box-sizing: border-box;
+    pointer-events: none;
+  }
+
+  input[type="range"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 56px;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .preview {
+    margin: 0 4px;
+    padding: 24px;
+    border-radius: 30px;
+    background: #0b0b0e;
+    border: 1px solid #1c1c22;
+    text-align: center;
+    color: var(--text);
+  }
+
+  .tip {
+    padding: 8px 0 0;
+    font-size: 20px;
+    color: var(--muted);
+    text-align: center;
+    min-height: 26px;
+  }
+</style>
+</head>
+<body>
+
+<div class="watch" id="watch">
+  <div class="view" id="view"></div>
+</div>
+
+<script src="data.js"></script>
+<script>
+(function () {
+  var D = window.WRIST;
+  var view = document.getElementById('view');
+
+  // ---------- 存储 ----------
+  function load(key, fallback) {
+    try {
+      var raw = localStorage.getItem('wrist-' + key);
+      return raw === null ? fallback : JSON.parse(raw);
+    } catch (e) { return fallback; }
+  }
+  function save(key, value) {
+    try { localStorage.setItem('wrist-' + key, JSON.stringify(value)); } catch (e) {}
+  }
+
+  // ---------- 内容索引 ----------
+  var flatCache = {};
+  function subject(file) { return D.data[file]; }
+
+  function flat(file) {
+    if (flatCache[file]) return flatCache[file];
+    var s = subject(file);
+    if (!s) return [];
+    var out = [];
+    s.chapters.forEach(function (chapter) {
+      chapter.points.forEach(function (point) {
+        out.push({ chapter: chapter.name, point: point });
+      });
+    });
+    flatCache[file] = out;
+    return out;
+  }
+
+  function findPoint(id) {
+    for (var i = 0; i < D.subjects.length; i += 1) {
+      var file = D.subjects[i].file;
+      var list = flat(file);
+      for (var j = 0; j < list.length; j += 1) {
+        if (pointIdOf(file, j) === id) {
+          return { file: file, name: D.subjects[i].name, index: j, entry: list[j] };
+        }
+      }
+    }
+    return null;
+  }
+
+  function pointIdOf(file, index) { return file + '#' + index; }
+
+  function countOf(file) { return flat(file).length; }
+
+  // ---------- 字号 ----------
+  var STEPS = [44, 40, 36, 32, 30, 28, 26, 24, 22];
+  var AVAIL = 330;
+  var RATIO = [0.8, 0.9, 1, 1.1, 1.2];
+
+  function em(line) {
+    var w = 0;
+    for (var i = 0; i < line.length; i += 1) {
+      w += line.codePointAt(i) >= 0x2e80 ? 1 : 0.55;
+    }
+    return w;
+  }
+
+  function fontFor(lines, level) {
+    var maxEm = 0;
+    (lines || []).forEach(function (l) { maxEm = Math.max(maxEm, em(l)); });
+    if (!maxEm) return 40;
+    var size = STEPS[STEPS.length - 1];
+    for (var i = 0; i < STEPS.length; i += 1) {
+      if (maxEm * STEPS[i] <= AVAIL) { size = STEPS[i]; break; }
+    }
+    var r = RATIO[level] === undefined ? 1 : RATIO[level];
+    return Math.max(18, Math.min(56, Math.round(size * r)));
+  }
+
+  // ---------- 状态 ----------
+  var state = {
+    view: 'home',
+    file: null,
+    pointId: null,
+    scrollTop: 0
+  };
+
+  function level() { return load('level', 2); }
+  function brightness() { return load('bright', 178); }
+  function showTrans() { return load('trans', false); }
+  function history() { return load('history', []); }
+  function readIds() { return load('read', {}); }
+  function lastId() { return load('last', ''); }
+
+  // ---------- 视图：首页 ----------
+  function homeView() {
+    var last = lastId();
+    var lastTitle = '';
+    if (last) {
+      var found = findPoint(last);
+      lastTitle = found ? found.entry.point.t : '继续上次的内容';
+    }
+
+    var html = '<div class="hdr"><div class="title">腕上学习—初中版</div>' +
+      '<div class="sub">' + D.stage + ' · ' + D.subjects.length + ' 门学科</div></div>';
+
+    html += '<div class="scroll"><div class="body">';
+
+    if (last) {
+      html += row('继续阅读', lastTitle, ' continue', 'continue');
+    }
+
+    D.subjects.forEach(function (s) {
+      var n = countOf(s.file);
+      html += row(s.name, n > 0 ? n + ' 个知识点' : '内容准备中', '', 'subject:' + s.file);
+    });
+
+    html += row('历史记录', history().length + ' 条', '', 'history');
+    html += row('设置', '字号 · 亮度', '', 'settings');
+    html += '</div></div>';
+    return html;
+  }
+
+  function row(title, sub, extraClass, action) {
+    return '<div class="row' + (extraClass || '') + '" data-act="' + action + '">' +
+      '<b>' + title + '</b><span>' + sub + '</span></div>';
+  }
+
+  // ---------- 视图：学科列表 ----------
+  function listView() {
+    var s = subject(state.file);
+    var readMap = readIds();
+    var html = '<button class="backbtn" data-act="back">‹</button><div class="hdr"><div class="title">' + s.name + '</div>' +
+      '<div class="sub accent">' + countOf(state.file) + ' 个知识点</div></div>';
+
+    html += '<div class="scroll" id="scroll"><div class="body">';
+    var index = 0;
+    s.chapters.forEach(function (chapter) {
+      html += '<div class="chapter">' + chapter.name + '</div>';
+      chapter.points.forEach(function (point) {
+        var id = pointIdOf(state.file, index);
+        index += 1;
+        html += '<div class="pt' + (readMap[id] ? ' read' : '') + '" data-act="open:' + id + '">' +
+          '<b>' + point.t + '</b>' + (readMap[id] ? '<em>已学</em>' : '') + '</div>';
+      });
+    });
+    html += '</div></div>';
+    return html;
+  }
+
+  // ---------- 视图：阅读页 ----------
+  function readerView() {
+    var found = findPoint(state.pointId);
+    if (!found) return '<div class="hdr"><div class="title">内容不存在</div></div>';
+
+    var p = found.entry.point;
+    var lines = p.f || [];
+    var trans = p.x || [];
+    var size = fontFor(lines, level());
+    var titleSize = Math.min(48, Math.max(22, Math.floor(440 / Math.max(1, em(p.t)))));
+
+    var body = '';
+    for (var i = 0; i < lines.length; i += 1) {
+      body += '<div class="ln" style="font-size:' + size + 'px">' + lines[i] + '</div>';
+      if (showTrans() && trans[i]) {
+        body += '<div class="tr">' + trans[i] + '</div>';
+      }
+    }
+    if (p.n) body += '<div class="note">' + p.n + '</div>';
+    if (p.e) {
+      p.e.forEach(function (line) { body += '<div class="extra">' + line + '</div>'; });
+    }
+
+    var hasTrans = trans.some(function (t) { return !!t; });
+    var atStart = found.index === 0;
+    var atEnd = found.index === flat(found.file).length - 1;
+
+    var html = '<div class="view reader">' +
+      '<div class="hdr"><div class="title reader-title" style="font-size:' + titleSize + 'px">' +
+      p.t + '</div><div class="sub">' + found.entry.chapter + '</div></div>' +
+      '<div class="scrollwrap"><div class="scroll" id="scroll"><div class="lines">' + body + '</div></div><div class="fade"></div></div>' +
+      '<div class="foot">' +
+      '<button class="btn small" data-act="back">‹</button>' +
+      '<button class="btn ' + (atStart ? 'off' : '') + '" data-act="prev">上一个</button>' +
+      '<button class="btn ' + (showTrans() ? 'on' : '') + '" data-act="trans">译文</button>' +
+      '<button class="btn primary" data-act="next">下一个</button>' +
+      '</div></div>';
+
+    return html;
+  }
+
+  // ---------- 视图：历史 ----------
+  function historyView() {
+    var list = history();
+    var html = '<button class="backbtn" data-act="back">‹</button><div class="hdr"><div class="title">历史记录</div>' +
+      '<div class="sub">' + list.length + ' 条</div></div><div class="scroll"><div class="body">';
+
+    if (!list.length) {
+      html += '<div class="row"><b>还没有学习记录</b><span>随便点开一条看看</span></div>';
+    } else {
+      list.forEach(function (item) {
+        html += '<div class="row" data-act="open:' + item.id + '">' +
+          '<b>' + item.title + '</b><span>' + item.chapter + '</span></div>';
+      });
+    }
+    html += '</div></div>';
+    return html;
+  }
+
+  // ---------- 视图：设置 ----------
+  function settingsView() {
+    var lv = level();
+    var br = brightness();
+    var labels = ['小', '偏小', '中', '偏大', '大'];
+    var sample = '东临碣石，以观沧海。';
+    var previewSize = fontFor([sample], lv);
+
+    var html = '<button class="backbtn" data-act="back">‹</button><div class="hdr"><div class="title">设置</div>' +
+      '<div class="sub">拖动圆点调节</div></div><div class="scroll"><div class="body" style="padding:0 14px 40px">';
+
+    html += card('屏幕亮度', Math.round(br / 255 * 100) + '%', 'bright', br, 255);
+    html += card('正文字号', labels[lv], 'level', lv, 4);
+
+    html += '<div class="preview"><div style="font-size:' + previewSize + 'px;line-height:1.3">' +
+      sample + '</div></div>';
+    html += '</div></div>';
+    return html;
+  }
+
+  function card(name, value, key, current, max) {
+    var pct = current / max;
+    return '<div class="card">' +
+      '<div class="card-head"><b>' + name + '</b><span>' + value + '</span></div>' +
+      '<div class="track">' +
+      '<div class="knob" style="left:calc(' + (pct * 100) + '% - ' + (56 * pct) + 'px)"></div>' +
+      '<input type="range" min="0" max="' + max + '" step="1" value="' + current + '" data-slider="' + key + '">' +
+      '</div></div>';
+  }
+
+  // ---------- 渲染 ----------
+  function render() {
+    var html = '';
+    if (state.view === 'home') html = homeView();
+    else if (state.view === 'list') html = listView();
+    else if (state.view === 'reader') html = readerView();
+    else if (state.view === 'history') html = historyView();
+    else if (state.view === 'settings') html = settingsView();
+
+    view.innerHTML = html;
+
+    // 亮度：非系统级，用内容透明度模拟（和手表端兜底方案一致）
+    var op = 0.4 + 0.6 * (brightness() / 255);
+    view.style.opacity = op.toFixed(2);
+
+    bind();
+  }
+
+  function bind() {
+    view.querySelectorAll('[data-act]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        handle(el.getAttribute('data-act'));
+      });
+    });
+
+    view.querySelectorAll('[data-slider]').forEach(function (input) {
+      input.addEventListener('input', function () {
+        var key = input.getAttribute('data-slider');
+        var value = Number(input.value);
+        if (key === 'level') save('level', value);
+        if (key === 'bright') save('bright', value);
+        render();
+      });
+    });
+
+    var sc = view.querySelector('#scroll');
+    if (sc) sc.scrollTop = 0;
+  }
+
+  function handle(action) {
+    if (action.indexOf('subject:') === 0) {
+      state.file = action.slice(8);
+      state.view = 'list';
+      render();
+      return;
+    }
+    if (action.indexOf('open:') === 0) {
+      openPoint(action.slice(5));
+      return;
+    }
+    if (action === 'continue') { openPoint(lastId()); return; }
+    if (action === 'history') { state.view = 'history'; render(); return; }
+    if (action === 'settings') { state.view = 'settings'; render(); return; }
+    if (action === 'trans') { save('trans', !showTrans()); render(); return; }
+    if (action === 'next' || action === 'prev') {
+      var found = findPoint(state.pointId);
+      if (!found) return;
+      var target = found.index + (action === 'next' ? 1 : -1);
+      var list = flat(found.file);
+      if (target < 0 || target >= list.length) return;
+      openPoint(pointIdOf(found.file, target));
+      return;
+    }
+    if (action === 'back') {
+      state.view = state.file ? 'list' : 'home';
+      render();
+    }
+  }
+
+  function openPoint(id) {
+    var found = findPoint(id);
+    if (!found) return;
+
+    save('last', id);
+
+    var readMap = readIds();
+    readMap[id] = true;
+    save('read', readMap);
+
+    var list = history().filter(function (item) { return item.id !== id; });
+    list.unshift({ id: id, title: found.entry.point.t, chapter: found.entry.chapter });
+    save('history', list.slice(0, 20));
+
+    state.pointId = id;
+    state.view = 'reader';
+    render();
+  }
+
+  // 点击空白处（标题区域）返回上一层
+  document.getElementById('watch').addEventListener('click', function (event) {
+    if (event.target.closest('[data-act]')) return;
+    if (event.target.closest('[data-slider]')) return;
+    if (event.target.classList.contains('track')) return;
+    if (event.target.closest('.hdr') && state.view !== 'home') {
+      handle('back');
+    }
+  });
+
+  // 键盘：↑↓ 滚动，←→ 上下一条
+  document.addEventListener('keydown', function (event) {
+    if (state.view !== 'reader') return;
+    if (event.key === 'ArrowRight') handle('next');
+    if (event.key === 'ArrowLeft') handle('prev');
+  });
+
+  // 支持用 hash 直接打开某页（方便作品集里做深链，也方便调试）
+  // #list=subjects/chinese-j1.json
+  // #reader=subjects/chinese-j1.json:3
+  // #settings
+  function applyHash() {
+    var hash = decodeURIComponent(location.hash.replace(/^#/, ''));
+    if (!hash) return;
+    var parts = hash.split('=');
+    var kind = parts[0];
+    var arg = parts[1] || '';
+    if (kind === 'list' && D.data[arg]) {
+      state.file = arg;
+      state.view = 'list';
+    } else if (kind === 'reader' && arg) {
+      var seg = arg.split(':');
+      if (D.data[seg[0]]) {
+        state.file = seg[0];
+        state.view = 'reader';
+        state.pointId = pointIdOf(seg[0], Number(seg[1]) || 0);
+      }
+    } else if (kind === 'history') {
+      state.view = 'history';
+    } else if (kind === 'settings') {
+      state.view = 'settings';
+    }
+  }
+
+  applyHash();
+  render();
+})();
+</script>
+</body>
+</html>

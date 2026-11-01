@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>腕上学习 · 试玩</title>
+<title>腕上必背 · 试玩</title>
 <style>
   :root {
     --bg: #000;
@@ -99,12 +99,79 @@
   .row.cont { background: #12324f; }
   .row.cont b { color: #8cc4ff; }
 
-  .chapter {
-    padding: 14px 10px 6px;
-    font-size: 26px;
-    font-weight: 500;
-    color: var(--text);
+  .row.quiz b { color: #c9a7ff; }
+
+  .scard {
+    margin: 4px 8px 14px;
+    padding: 20px 16px 18px;
+    border-radius: 34px;
+    text-align: center;
+    cursor: pointer;
+    color: #fff;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.25);
   }
+  .c-top { display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .c-top img { width: 30px; height: 30px; }
+  .c-top span { font-size: 22px; color: #eaf2ff; }
+  .c-mid { display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .c-num { font-size: 76px; font-weight: 700; line-height: 1.05; }
+  .c-mid i { font-style: normal; font-size: 28px; }
+  .c-quote { font-size: 30px; font-weight: 600; line-height: 1.25; }
+  .c-quote2 { font-size: 30px; font-weight: 600; margin-top: 2px; }
+  .c-bar {
+    width: 260px; height: 12px; margin: 12px auto 0; border-radius: 6px;
+    background: rgba(0,0,0,.26); overflow: hidden;
+  }
+  .c-fill { height: 12px; border-radius: 6px; background: #fff; }
+  .c-goal { font-size: 21px; margin-top: 10px; }
+  .c-tip { font-size: 20px; margin-top: 6px; color: rgba(255,255,255,.85); }
+  .scard-lv1 { background: linear-gradient(to bottom, #60a5fa, #1d4ed8); }
+  .scard-lv2 { background: linear-gradient(to bottom, #4ade80, #15803d); }
+  .scard-lv3 { background: linear-gradient(to bottom, #fb923c, #c2410c); }
+  .scard-lv4 { background: linear-gradient(to bottom, #a855f7, #6d28d9); }
+  .scard-lv5 { background: linear-gradient(to bottom, #fbbf24, #b45309); }
+  .scard.scard-reached { border: 3px solid #fde68a; }
+  .scard.scard-reached .c-fill { background: #fde68a; }
+
+  .bdg {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 22px; margin-bottom: 8px; border-radius: 24px; background: var(--item);
+  }
+  .bdg b { font-size: 28px; font-weight: 500; color: var(--muted); }
+  .bdg em { font-size: 20px; font-style: normal; color: var(--muted); }
+  .bdg.b-bronze { background: #3a2a1c; }
+  .bdg.b-gold { background: #3a3410; }
+  .bdg.b-diamond { background: #14333f; }
+  .medal {
+    width: 110px; height: 110px; border-radius: 55px; margin: 18px auto 12px;
+    display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 600;
+  }
+
+  .wb {
+    padding: 14px 22px;
+    margin-bottom: 10px;
+    border-radius: 26px;
+    background: var(--item);
+  }
+  .wb b { display: block; font-size: 26px; font-weight: 500; line-height: 1.35; }
+  .wb em { display: block; font-size: 20px; font-style: normal; color: var(--muted); margin-top: 4px; }
+  .wb.ok { background: #14251a; }
+  .wb.ok em { color: #7ce38b; }
+
+  .cat {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 104px;
+    margin-bottom: 10px;
+    padding: 10px 28px;
+    border-radius: 30px;
+    background: var(--item);
+    cursor: pointer;
+  }
+  .cat:active { background: var(--item-2); }
+  .cat b { font-size: 40px; font-weight: 500; }
+  .cat em { font-size: 24px; font-style: normal; color: #ffd60a; }
 
   .pt {
     display: flex;
@@ -135,9 +202,15 @@
 
   .lines { padding: 0 24px 30px; text-align: center; }
   .ln { color: var(--text); line-height: 1.32; padding: 3px 0; word-break: break-word; }
-  .tr { color: #8cc4ff; font-size: 24px; line-height: 1.4; padding: 1px 0 9px; }
+  .tr { color: #8cc4ff; line-height: 1.35; padding: 1px 20px 9px; }
   .note { margin-top: 16px; font-size: 30px; color: var(--dim); }
   .extra { margin-top: 8px; font-size: 26px; color: var(--dim); }
+  .sec { margin-top: 18px; padding-top: 8px; font-size: 22px; font-weight: 500; color: #ffd60a; }
+  .pic { display: flex; justify-content: center; padding: 6px 0 2px; }
+  .pic img { width: 170px; height: 170px; object-fit: contain; }
+  .ex { color: var(--dim); line-height: 1.4; padding: 1px 0; }
+  .wd { color: #9be29b; line-height: 1.4; padding: 1px 0; }
+  .sn { color: #8cc4ff; line-height: 1.4; padding: 1px 0; }
 
   .foot {
     flex: none;
@@ -297,6 +370,16 @@
     return w;
   }
 
+  /** 附属行（题目/好词/好句）字号：逐行算，保证不溢出圆屏 */
+  function subFont(line, cap) {
+    var e = em(line || '');
+    var steps = [26, 24, 22, 20, 18];
+    for (var i = 0; i < steps.length; i += 1) {
+      if (steps[i] <= cap && e * steps[i] <= AVAIL) return steps[i];
+    }
+    return 18;
+  }
+
   function fontFor(lines, level) {
     var maxEm = 0;
     (lines || []).forEach(function (l) { maxEm = Math.max(maxEm, em(l)); });
@@ -313,13 +396,248 @@
   var state = {
     view: 'home',
     file: null,
+    chapter: -1,
     pointId: null,
-    scrollTop: 0
+    scrollTop: 0,
+    quiz: null,
+    cardFlip: false,
+    justChecked: false,
+    badgeId: '',
+    revealDismissed: false
   };
+
+  // ---------- 错题本（和手表端同一个数据模型，存 localStorage）----------
+  function wrongAll() {
+    var v = load('wrongbook', null);
+    return v && v.items ? v : { items: [] };
+  }
+  function wrongSave(v) { save('wrongbook', v); }
+  function wrongAdd(q) {
+    var all = wrongAll();
+    var found = null;
+    all.items.forEach(function (it) { if (it.key === q.key) found = it; });
+    if (found) {
+      found.wrongCount = (found.wrongCount || 0) + 1;
+      found.streak = 0;
+      found.lastAt = Date.now();
+    } else {
+      all.items.push({
+        key: q.key, pointId: q.pointId, subjectId: q.subjectId, subjectName: q.subjectName,
+        chapterName: q.chapterName, ask: q.ask, answer: q.answer,
+        wrongCount: 1, reviewCount: 0, streak: 0, addedAt: Date.now(), lastAt: Date.now()
+      });
+    }
+    wrongSave(all);
+  }
+  function wrongReview(key, correct) {
+    var all = wrongAll();
+    all.items.forEach(function (it) {
+      if (it.key !== key) return;
+      it.reviewCount = (it.reviewCount || 0) + 1;
+      it.lastAt = Date.now();
+      if (correct) it.streak = (it.streak || 0) + 1;
+      else { it.streak = 0; it.wrongCount = (it.wrongCount || 0) + 1; }
+    });
+    wrongSave(all);
+  }
+  function wrongRemove(key) {
+    var all = wrongAll();
+    all.items = all.items.filter(function (it) { return it.key !== key; });
+    wrongSave(all);
+  }
+  function isMastered(it) { return (it.streak || 0) >= 3; }
+  function wrongToReview() { return wrongAll().items.filter(function (it) { return !isMastered(it); }); }
+
+  // ---------- 出题：按内容类型分题型 ----------
+  function looksLikeSentence(lines) {
+    if (lines.length < 2) return false;
+    var hit = 0;
+    lines.forEach(function (line) {
+      if (/[，。；！？,.;!?]$/.test(line) && line.length >= 4 && line.length <= 26) hit += 1;
+    });
+    return hit >= Math.ceil(lines.length * 0.7);
+  }
+  function looksLikeTime(line) { return /年|世纪/.test(line || '') && /\d/.test(line || ''); }
+
+  function questionsOfPoint(point, file, subjectName, chapterName) {
+    var lines = (point.f || []).filter(function (l) { return !!l; });
+    if (lines.length < 2) return [];
+    var meta = { pointId: file + '#' + point.t, subjectId: file, subjectName: subjectName, chapterName: chapterName };
+    var out = [];
+
+    if (looksLikeTime(lines[0])) {
+      out.push({ key: point.t + '#time|' + file, type: 'time', title: point.t, hint: '这件事发生在什么时候',
+        ask: lines.slice(1).join('；'), answer: lines[0], meta: meta });
+      out.push({ key: point.t + '#event|' + file, type: 'event', title: point.t, hint: '这个时间发生了什么',
+        ask: lines[0], answer: lines.slice(1).join('；'), meta: meta });
+      return out;
+    }
+
+    if (looksLikeSentence(lines)) {
+      var limit = Math.min(3, lines.length - 1);
+      for (var i = 1; i <= limit; i += 1) {
+        var reverse = i % 2 === 0;
+        out.push({
+          key: point.t + '#' + i + '|' + file, type: 'next', title: point.t,
+          hint: reverse ? '默出上一句' : '默出下一句',
+          ask: reverse ? lines[i] : lines[i - 1],
+          answer: reverse ? lines[i - 1] : lines[i],
+          reverse: reverse, meta: meta
+        });
+      }
+      return out;
+    }
+
+    out.push({
+      key: point.t + '#recall|' + file, type: 'recall', title: point.t,
+      hint: '在心里过一遍这 ' + Math.min(4, lines.length) + ' 条要点', ask: '', answer: lines.slice(0, 4).join('；'), meta: meta
+    });
+    return out;
+  }
+
+  function poolOfFile(file) {
+    var s = subject(file);
+    var pool = [];
+    s.chapters.forEach(function (ch) {
+      ch.points.forEach(function (p) {
+        pool = pool.concat(questionsOfPoint(p, file, s.name, ch.name));
+      });
+    });
+    return pool;
+  }
+  function poolOfAll() {
+    var pool = [];
+    D.subjects.forEach(function (s) { pool = pool.concat(poolOfFile(s.file)); });
+    return pool;
+  }
+  function shuffle(a) {
+    var arr = a.slice();
+    for (var i = arr.length - 1; i > 0; i -= 1) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
+  }
 
   function level() { return load('level', 2); }
   function brightness() { return load('bright', 178); }
   function showTrans() { return load('trans', false); }
+  function showColor() { return load('color', true); }
+
+  // ---------- 打卡（与手表端同一套规则）----------
+  function dk(d) {
+    var x = d || new Date();
+    function p(n) { return n < 10 ? '0' + n : '' + n; }
+    return x.getFullYear() + '-' + p(x.getMonth() + 1) + '-' + p(x.getDate());
+  }
+  function yk() { var d = new Date(); d.setDate(d.getDate() - 1); return dk(d); }
+  function streakState() {
+    var v = load('streak', null);
+    if (!v || typeof v !== 'object') return { streak: 0, lastDate: '', todayDate: '', todayCount: 0, checkedDate: '', milestones: [], pending: 0 };
+    return {
+      streak: v.streak || 0, lastDate: v.lastDate || '', todayDate: v.todayDate || '',
+      todayCount: v.todayCount || 0, checkedDate: v.checkedDate || '', milestones: v.milestones || [], pending: v.pending || 0
+    };
+  }
+  function getStreak() {
+    var s = streakState();
+    if (s.lastDate === dk() || s.lastDate === yk()) return s.streak;
+    return 0;
+  }
+  function getTodayCount() { var s = streakState(); return s.todayDate === dk() ? s.todayCount : 0; }
+  function getGoal() { return load('goal', 10); }
+  function touchToday() {
+    var s = streakState();
+    var today = dk();
+    if (s.todayDate !== today) { s.todayDate = today; s.todayCount = 0; }
+    s.todayCount += 1;
+    if (s.lastDate !== today) {
+      s.streak = s.lastDate === yk() ? (s.streak || 0) + 1 : 1;
+      s.lastDate = today;
+      var ms = [3, 7, 15, 30, 60, 100];
+      if (ms.indexOf(s.streak) >= 0 && (s.milestones || []).indexOf(s.streak) < 0) {
+        s.milestones = (s.milestones || []).concat([s.streak]);
+        s.pending = s.streak;
+      }
+    }
+    s.checkedDate = today;
+    save('streak', s);
+  }
+  function isChecked() { return streakState().checkedDate === dk(); }
+  function checkIn() {
+    var s = streakState();
+    var today = dk();
+    if (s.lastDate !== today) {
+      s.streak = s.lastDate === yk() ? (s.streak || 0) + 1 : 1;
+      s.lastDate = today;
+      var ms = [3, 7, 15, 30, 60, 100];
+      if (ms.indexOf(s.streak) >= 0 && (s.milestones || []).indexOf(s.streak) < 0) {
+        s.milestones = (s.milestones || []).concat([s.streak]);
+        s.pending = s.streak;
+      }
+    }
+    s.checkedDate = today;
+    save('streak', s);
+  }
+  function milestoneText(days) {
+    if (days >= 100) return '100 天！这已经是习惯了';
+    if (days >= 30) return '满 30 天，了不起！';
+    if (days >= 15) return '15 天，稳住了';
+    if (days >= 7) return '连续 7 天，保持住！';
+    if (days >= 3) return '第 3 天，习惯正在形成';
+    return '又坚持了一天';
+  }
+  function dailyQuote() {
+    var list = (D.quotes || []);
+    if (!list.length) return { q: '', from: '', cheer: '' };
+    var d = new Date();
+    var seed = d.getFullYear() * 372 + d.getMonth() * 31 + d.getDate();
+    return list[seed % list.length];
+  }
+  function cardClass(streak) {
+    if (streak >= 30) return 'scard scard-lv5';
+    if (streak >= 14) return 'scard scard-lv4';
+    if (streak >= 7) return 'scard scard-lv3';
+    if (streak >= 3) return 'scard scard-lv2';
+    return 'scard scard-lv1';
+  }
+  function streakCardHtml() {
+    var streak = getStreak();
+    var today = getTodayCount();
+    var goal = getGoal();
+    var quote = dailyQuote();
+    var checked = isChecked();
+    var cls = cardClass(streak) + (checked ? ' scard-reached' : '');
+    var BAR = 260;
+
+    if (!state.cardFlip) {
+      var ratio = goal > 0 ? Math.min(1, today / goal) : 0;
+      var left = goal - today;
+      var tip = checked ? '再点一下看金句' : (left > 0 ? '还差 ' + left + ' 条到今日目标' : '再点一下看金句');
+      if (state.justChecked) tip = '打卡成功，明天继续';
+      return '<div class="' + cls + '" data-act="flip">' +
+        '<div class="c-top"><img src="ui/' + (checked ? 'check' : 'flame') + '.png"><span>' +
+        (checked ? '今天已打卡' : '点一下打卡') + '</span></div>' +
+        '<div class="c-mid"><b class="c-num">' + streak + ' 天</b></div>' +
+        '<div class="c-bar"><div class="c-fill" style="width:' + Math.round(BAR * ratio) + 'px"></div></div>' +
+        '<div class="c-goal">今日 ' + today + ' / ' + goal + '</div>' +
+        '<div class="c-tip">' + tip + '</div>' +
+        '</div>';
+    }
+
+    var parts = (quote.q || '').split('，');
+    var line2 = parts.length > 1 ? parts.slice(1).join('，') : '';
+    var s2 = streakState();
+    var tail = s2.pending ? milestoneText(s2.pending) : (quote.cheer || '点一下回到进度');
+    return '<div class="' + cls + '" data-act="flip">' +
+      '<div class="c-top"><img src="ui/star.png"><span>' + (streak > 0 ? '已坚持 ' + streak + ' 天' : '今天开始') + '</span></div>' +
+      '<div class="c-mid"><b class="c-quote">' + parts[0] + '</b></div>' +
+      '<div class="c-quote2">' + line2 + '</div>' +
+      '<div class="c-goal">—— ' + (quote.from || '') + '</div>' +
+      '<div class="c-tip">' + tail + '</div>' +
+      '</div>';
+  }
+
   function history() { return load('history', []); }
   function readIds() { return load('read', {}); }
   function lastId() { return load('last', ''); }
@@ -333,21 +651,30 @@
       lastTitle = found ? found.entry.point.t : '继续上次的内容';
     }
 
-    var html = '<div class="hdr"><div class="title">腕上学习—初中版</div>' +
+    var html = '<div class="hdr"><div class="title">腕上必背·初中</div>' +
       '<div class="sub">' + D.stage + ' · ' + D.subjects.length + ' 门学科</div></div>';
 
     html += '<div class="scroll"><div class="body">';
 
+    html += streakCardHtml();
+
     if (last) {
       html += row('继续阅读', lastTitle, ' continue', 'continue');
     }
+
+    var reviewCount = wrongToReview().length;
+    html += row('开始自测', reviewCount > 0 ? '错题重测 ' + reviewCount + ' 道' : '给一句默下一句', ' quiz', 'quiz');
 
     D.subjects.forEach(function (s) {
       var n = countOf(s.file);
       html += row(s.name, n > 0 ? n + ' 个知识点' : '内容准备中', '', 'subject:' + s.file);
     });
 
+    html += row('错题本', wrongAll().items.length > 0 ? wrongAll().items.length + ' 道待复习' : '还没有错题', '', 'wrongbook');
     html += row('历史记录', history().length + ' 条', '', 'history');
+
+    var bs = badgeSummary();
+    html += row('我的徽章', '已点亮 ' + bs.done + ' / ' + bs.total + ' 枚', '', 'badges');
     html += row('设置', '字号 · 亮度', '', 'settings');
     html += '</div></div>';
     return html;
@@ -358,23 +685,42 @@
       '<b>' + title + '</b><span>' + sub + '</span></div>';
   }
 
-  // ---------- 视图：学科列表 ----------
+  // ---------- 视图：学科列表（两级：分类 → 知识点）----------
   function listView() {
     var s = subject(state.file);
     var readMap = readIds();
-    var html = '<button class="backbtn" data-act="back">‹</button><div class="hdr"><div class="title">' + s.name + '</div>' +
-      '<div class="sub accent">' + countOf(state.file) + ' 个知识点</div></div>';
+    var html = '<button class="backbtn" data-act="back">‹</button>';
 
-    html += '<div class="scroll" id="scroll"><div class="body">';
-    var index = 0;
-    s.chapters.forEach(function (chapter) {
-      html += '<div class="chapter">' + chapter.name + '</div>';
-      chapter.points.forEach(function (point) {
-        var id = pointIdOf(state.file, index);
-        index += 1;
-        html += '<div class="pt' + (readMap[id] ? ' read' : '') + '" data-act="open:' + id + '">' +
-          '<b>' + point.t + '</b>' + (readMap[id] ? '<em>已学</em>' : '') + '</div>';
+    if (state.chapter === null || state.chapter === undefined || state.chapter < 0) {
+      html += '<div class="hdr"><div class="title">' + s.name + '</div>' +
+        '<div class="sub accent">' + s.chapters.length + ' 个分类 · ' + countOf(state.file) + ' 个知识点</div></div>';
+      html += '<div class="scroll" id="scroll"><div class="body">';
+      var base = 0;
+      s.chapters.forEach(function (chapter, ci) {
+        var done = 0;
+        chapter.points.forEach(function (point, pi) {
+          if (readMap[pointIdOf(state.file, base + pi)]) done += 1;
+        });
+        var badge = done > 0 ? done + '/' + chapter.points.length : chapter.points.length + ' 条';
+        html += '<div class="cat" data-act="cat:' + ci + '"><b>' + chapter.name + '</b><em>' + badge + '</em></div>';
+        base += chapter.points.length;
       });
+      html += '</div></div>';
+      return html;
+    }
+
+    var chapter = s.chapters[state.chapter];
+    if (!chapter) { state.chapter = -1; return listView(); }
+    var startIndex = 0;
+    for (var i = 0; i < state.chapter; i += 1) startIndex += s.chapters[i].points.length;
+
+    html += '<div class="hdr"><div class="title">' + chapter.name + '</div>' +
+      '<div class="sub accent">' + s.name + ' · ' + chapter.points.length + ' 个知识点</div></div>';
+    html += '<div class="scroll" id="scroll"><div class="body">';
+    chapter.points.forEach(function (point, pi) {
+      var id = pointIdOf(state.file, startIndex + pi);
+      html += '<div class="pt' + (readMap[id] ? ' read' : '') + '" data-act="open:' + id + '">' +
+        '<b>' + point.t + '</b>' + (readMap[id] ? '<em>已学</em>' : '') + '</div>';
     });
     html += '</div></div>';
     return html;
@@ -389,21 +735,54 @@
     var lines = p.f || [];
     var trans = p.x || [];
     var size = fontFor(lines, level());
-    var titleSize = Math.min(48, Math.max(22, Math.floor(440 / Math.max(1, em(p.t)))));
+    var titleSize = Math.min(48, Math.max(22, Math.floor(340 / Math.max(1, em(p.t)))));
+
+    // 笔记配色：红=重点 橙=时间 黄=结论 绿=方法 蓝=解释 紫=题目
+    var colorOn = showColor();
+    var C = { key: '#ff6b6b', time: '#ffa94d', must: '#ffd60a', method: '#51cf66', explain: '#4dabf7', ask: '#b197fc' };
+    function clr(kind) { return colorOn ? 'color:' + C[kind] + ';' : ''; }
 
     var body = '';
+    if (p.i) {
+      body += '<div class="pic"><img src="chem/' + p.i + '" alt=""></div>';
+    }
+    if (p.q) {
+      body += '<div class="sec" style="' + clr('ask') + '">常考题目</div>';
+      p.q.forEach(function (line) {
+        body += '<div class="ex" style="font-size:' + subFont(line, 24) + 'px;' + clr('ask') + '">' + line + '</div>';
+      });
+    }
     for (var i = 0; i < lines.length; i += 1) {
-      body += '<div class="ln" style="font-size:' + size + 'px">' + lines[i] + '</div>';
+      var mark = '';
+      if (colorOn) {
+        if (/^错说/.test(lines[i])) mark = C.key;
+        else if (/年|世纪/.test(lines[i]) && /\d/.test(lines[i])) mark = C.time;
+      }
+      body += '<div class="ln" style="font-size:' + size + 'px;' + (mark ? 'color:' + mark + ';' : '') + '">' + lines[i] + '</div>';
       if (showTrans() && trans[i]) {
-        body += '<div class="tr">' + trans[i] + '</div>';
+        body += '<div class="tr" style="font-size:' + Math.round(size * 0.95) + 'px;' + clr('explain') + '">' + trans[i] + '</div>';
       }
     }
-    if (p.n) body += '<div class="note">' + p.n + '</div>';
+    var isYiCuo = colorOn && (p.g || []).indexOf('易错') >= 0;
+    if (p.n) {
+      body += '<div class="note" style="' + (isYiCuo ? 'color:' + C.key + ';' : clr('must')) + '">' + p.n + '</div>';
+    }
     if (p.e) {
-      p.e.forEach(function (line) { body += '<div class="extra">' + line + '</div>'; });
+      p.e.forEach(function (line) { body += '<div class="extra" style="' + clr('method') + '">' + line + '</div>'; });
+    }
+    if (p.w) {
+      body += '<div class="sec" style="' + clr('ask') + '">好词好短语</div>';
+      p.w.forEach(function (line) {
+        body += '<div class="wd" style="font-size:' + subFont(line, 26) + 'px;' + clr('method') + '">' + line + '</div>';
+      });
+    }
+    if (p.s) {
+      body += '<div class="sec" style="' + clr('ask') + '">好句背下来</div>';
+      p.s.forEach(function (line) {
+        body += '<div class="sn" style="font-size:' + subFont(line, 26) + 'px;' + clr('time') + '">' + line + '</div>';
+      });
     }
 
-    var hasTrans = trans.some(function (t) { return !!t; });
     var atStart = found.index === 0;
     var atEnd = found.index === flat(found.file).length - 1;
 
@@ -453,6 +832,15 @@
     html += card('屏幕亮度', Math.round(br / 255 * 100) + '%', 'bright', br, 255);
     html += card('正文字号', labels[lv], 'level', lv, 4);
 
+    var on = showColor();
+    html += '<div class="card"><div class="card-head"><b>笔记配色</b><span>' + (on ? '已开启' : '已关闭') + '</span></div>' +
+      '<button class="btn ' + (on ? 'on' : '') + '" style="margin-top:14px;width:100%" data-act="color">' +
+      (on ? '点击关闭' : '点击开启') + '</button>' +
+      '<div style="display:flex;justify-content:space-between;margin-top:12px;font-size:20px">' +
+      '<span style="color:#ff6b6b">重点</span><span style="color:#ffa94d">时间</span><span style="color:#ffd60a">结论</span>' +
+      '<span style="color:#51cf66">方法</span><span style="color:#4dabf7">解释</span><span style="color:#b197fc">题目</span>' +
+      '</div></div>';
+
     html += '<div class="preview"><div style="font-size:' + previewSize + 'px;line-height:1.3">' +
       sample + '</div></div>';
     html += '</div></div>';
@@ -469,6 +857,227 @@
       '</div></div>';
   }
 
+  // ---------- 徽章（青铜/黄金/钻石） ----------
+  function badgeNames() { var m = {}; (D.badgeNames || []).forEach(function (b) { m[b.id] = b.name; }); return m; }
+  function tierOf(read, total) {
+    if (!total) return '';
+    if (read >= total) return 'diamond';
+    if (read / total >= 0.7) return 'gold';
+    if (read / total >= 0.3 && read > 0) return 'bronze';
+    return '';
+  }
+  function tierLabel(t) { return t === 'diamond' ? '钻石' : t === 'gold' ? '黄金' : t === 'bronze' ? '青铜' : '未解锁'; }
+  function tierColor(t) { return t === 'diamond' ? '#7ce3ff' : t === 'gold' ? '#ffd60a' : t === 'bronze' ? '#e0a880' : '#7c7c8a'; }
+  function tierCls(t) { return t === 'diamond' ? ' b-diamond' : t === 'gold' ? ' b-gold' : t === 'bronze' ? ' b-bronze' : ''; }
+
+  function badgeList() {
+    var readMap = readIds();
+    var names = badgeNames();
+    var out = [];
+    D.subjects.forEach(function (s) {
+      var subj = subject(s.file);
+      var base = 0;
+      subj.chapters.forEach(function (ch) {
+        var read = 0;
+        ch.points.forEach(function (p, pi) { if (readMap[pointIdOf(s.file, base + pi)]) read += 1; });
+        base += ch.points.length;
+        var id = s.file + '|' + ch.name;
+        var tier = tierOf(read, ch.points.length);
+        var dates = load('badgeDates', {});
+        if (tier && !dates[id + '|' + tier]) {
+          var pend = load('badgePending', []);
+          pend.push({ id: id, tier: tier });
+          save('badgePending', pend);
+          var d0 = new Date();
+          dates[id + '|' + tier] = (d0.getMonth() + 1) + ' 月 ' + d0.getDate() + ' 日';
+          save('badgeDates', dates);
+        }
+        out.push({ id: id, name: names[id] || ch.name, chapterName: ch.name, file: s.file, subjectName: s.name,
+          total: ch.points.length, read: read, tier: tier });
+      });
+    });
+    return out;
+  }
+  function badgeSummary() {
+    var list = badgeList();
+    var res = { total: list.length, done: 0, bronze: 0, gold: 0, diamond: 0 };
+    list.forEach(function (b) {
+      if (b.tier === 'diamond') { res.diamond += 1; res.done += 1; }
+      else if (b.tier === 'gold') { res.gold += 1; res.done += 1; }
+      else if (b.tier === 'bronze') { res.bronze += 1; res.done += 1; }
+    });
+    return res;
+  }
+  function badgesView() {
+    var list = badgeList();
+    var pend = load('badgePending', []);
+    if (pend.length && !state.revealDismissed) {
+      var p0 = pend[0];
+      var cur0 = null;
+      list.forEach(function (x) { if (x.id === p0.id) cur0 = x; });
+      if (cur0) {
+        var rt = '<div class="hdr"><div class="title">新徽章解锁</div><div class="sub accent">' + cur0.subjectName + '</div></div>';
+        rt += '<div class="scroll"><div class="body" style="text-align:center;padding-top:6px">';
+        rt += '<div class="medal" style="background:' + tierColor(p0.tier) + ';width:104px;height:104px;border-radius:52px;margin:6px auto 8px;display:flex;align-items:center;justify-content:center">';
+        rt += '<span style="color:#0b0b0e;font-size:24px;font-weight:600">' + tierLabel(p0.tier) + '</span></div>';
+        rt += '<div style="font-size:34px;font-weight:600">' + cur0.name + '</div>';
+        rt += '<div style="font-size:20px;color:#9a9aa4;margin-top:4px">' + cur0.chapterName + '</div>';
+        rt += '</div></div>';
+        rt += '<div class="foot"><button class="btn primary" data-act="btake">收下</button></div>';
+        return rt;
+      }
+    }
+    state.revealDismissed = false;
+    var groups = {};
+    var order = [];
+    list.forEach(function (b) {
+      if (!groups[b.subjectName]) { groups[b.subjectName] = []; order.push(b.subjectName); }
+      groups[b.subjectName].push(b);
+    });
+    var sum = badgeSummary();
+
+    var html = '<button class="backbtn" data-act="back">‹</button><div class="hdr"><div class="title">我的徽章</div>' +
+      '<div class="sub accent">已集 ' + sum.done + '/' + sum.total + ' · 钻 ' + sum.diamond + ' 金 ' + sum.gold + ' 铜 ' + sum.bronze + '</div></div>' +
+      '<div class="scroll"><div class="body">';
+    order.forEach(function (name) {
+      var items = groups[name];
+      var got = items.filter(function (b) { return b.tier; }).length;
+      html += '<div class="chapter">' + name + ' · ' + got + '/' + items.length + '</div>';
+      items.forEach(function (b) {
+        html += '<div class="bdg' + tierCls(b.tier) + '" data-act="bopen:' + encodeURIComponent(b.id) + '">' +
+          '<b style="color:' + (b.tier ? '#fff' : '#9a9aa4') + '">' + (b.tier ? b.name : '？？？') + '</b>' +
+          '<em style="color:' + tierColor(b.tier) + '">' + (b.tier ? tierLabel(b.tier) : b.read + '/' + b.total) + '</em></div>';
+      });
+    });
+    html += '</div></div>';
+    return html;
+  }
+  function badgeDetailView() {
+    var list = badgeList();
+    var cur = null;
+    list.forEach(function (b) { if (b.id === state.badgeId) cur = b; });
+    if (!cur) { state.view = 'badges'; return badgesView(); }
+    var bronze = Math.max(1, Math.ceil(cur.total * 0.3));
+    var gold = Math.ceil(cur.total * 0.7);
+    var date = cur.tier ? (load('badgeDates', {})[cur.id + '|' + cur.tier] || '') : '';
+    var html = '<button class="backbtn" data-act="back">‹</button>' +
+      '<div class="hdr"><div class="title">' + (cur.tier ? cur.name : '？？？') + '</div><div class="sub">' + cur.subjectName + '</div></div>' +
+      '<div class="scroll"><div class="body" style="text-align:center;padding:0 20px">' +
+      '<div class="medal" style="background:' + tierColor(cur.tier) + '"><span style="color:#0b0b0e">' + tierLabel(cur.tier) + '</span></div>' +
+      '<div style="font-size:20px;color:#c8c8d0;margin-top:10px">铜 ' + bronze + ' 条 · 金 ' + gold + ' 条 · 钻 ' + cur.total + ' 条</div>' +
+      '<div style="font-size:22px;color:#fff;margin-top:6px">已读 ' + cur.read + ' / ' + cur.total + ' 条</div>' +
+      '<div style="font-size:20px;color:#ffd60a;margin-top:6px">' + (cur.tier ? (date || '今天获得') : '还没解锁，读完就揭晓名字') + '</div>' +
+      '</div></div>';
+    return html;
+  }
+
+  // ---------- 视图：自测 ----------
+  function quizView() {
+    var q = state.quiz;
+    if (!q || q.mode === 'scope') return quizScopeView();
+    if (q.mode === 'ask') return quizAskView();
+    return quizDoneView();
+  }
+
+  function quizScopeView() {
+    var q = state.quiz || { count: 10 };
+    var counts = [10, 20, 0];
+    var label = q.count > 0 ? q.count + ' 题' : '全部';
+    var html = '<button class="backbtn" data-act="back">‹</button><div class="hdr"><div class="title">开始自测</div>' +
+      '<div class="sub accent">选一个范围开始 · ' + label + '</div></div>' +
+      '<div class="scroll" id="scroll"><div class="body">';
+
+    html += '<div class="row" data-act="qcount"><b>题量</b><span>' + label + '</span></div>';
+
+    var review = wrongToReview().length;
+    html += '<div class="row' + (review ? ' cont' : '') + '" data-act="qwrong"><b>错题重测</b><span>' +
+      (review ? review + ' 道' : '暂无错题') + '</span></div>';
+
+    html += '<div class="row" data-act="qall"><b>全科随机</b><span>' + D.subjects.length + ' 学科混着测</span></div>';
+
+    D.subjects.forEach(function (s) {
+      var total = poolOfFile(s.file).length;
+      html += '<div class="row" data-act="qsubject:' + s.file + '"><b>' + s.name + '</b><span>' + total + ' 道题</span></div>';
+    });
+
+    html += '</div></div>';
+    return html;
+  }
+
+  function quizAskView() {
+    var q = state.quiz;
+    var cur = q.questions[q.index];
+    var meta = cur.meta || {};
+    var ctx = [meta.subjectName, meta.chapterName].filter(Boolean).join(' · ');
+    var html = '<div class="hdr"><div class="title" style="font-size:28px">第 ' + (q.index + 1) + ' / ' + q.questions.length + ' 题</div>' +
+      '<div class="sub">' + ctx + '</div></div>' +
+      '<div class="scroll"><div class="lines" style="padding-top:12px">' +
+      '<div class="ln" style="font-size:34px;color:#fff">' + (cur.title || '') + '</div>' +
+      '<div class="tr" style="font-size:22px;color:#ffd60a;padding-top:6px">' + (cur.hint || '') + '</div>' +
+      (cur.ask ? '<div class="ln" style="font-size:' + Math.min(40, fontFor([cur.ask], level())) + 'px;margin-top:8px">' + cur.ask + '</div>' : '');
+
+    if (q.show) {
+      html += '<div class="tr" style="font-size:' + Math.round(fontFor([cur.answer], level()) * 0.95) + 'px;color:#51cf66;margin-top:14px">' +
+        cur.answer + '</div>';
+    }
+    html += '</div></div><div class="foot">';
+
+    if (!q.show) {
+      html += '<button class="btn primary" data-act="qshow" style="width:70%">看答案</button>';
+    } else {
+      html += '<button class="btn" data-act="qright" style="background:#1c5c2e;color:#b9f6c5">记住了</button>' +
+        '<button class="btn" data-act="qwrongans" style="background:#5c1c1c;color:#ffc9c9">忘了</button>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function quizDoneView() {
+    var q = state.quiz;
+    var html = '<div class="hdr"><div class="title">' + (q.wrong === 0 ? '全对，漂亮！' : '测完了') + '</div>' +
+      '<div class="sub accent">' + q.right + ' / ' + q.questions.length + '</div></div>' +
+      '<div class="scroll"><div class="lines">' +
+      '<div class="note">' + (q.wrong > 0 ? q.wrong + ' 道已加入错题本' : '继续保持') + '</div>' +
+      '<div class="extra">错题本共 ' + wrongAll().items.length + ' 道</div>' +
+      '</div></div><div class="foot">' +
+      '<button class="btn" data-act="qagain">再测一轮</button>' +
+      '<button class="btn primary" data-act="qhome">回首页</button>' +
+      '</div>';
+    return html;
+  }
+
+  // ---------- 视图：错题本 ----------
+  function wrongbookView() {
+    var all = wrongAll();
+    var groups = {};
+    var order = [];
+    all.items.forEach(function (it) {
+      var id = it.subjectId || 'other';
+      if (!groups[id]) { groups[id] = { name: it.subjectName || '其他', items: [] }; order.push(id); }
+      groups[id].items.push(it);
+    });
+
+    var html = '<button class="backbtn" data-act="back">‹</button><div class="hdr"><div class="title">错题本</div>' +
+      '<div class="sub accent">' + all.items.length + ' 道 · 点条目可移出</div></div>' +
+      '<div class="scroll"><div class="body">';
+
+    if (!all.items.length) {
+      html += '<div class="row"><b>错题本是空的</b><span>去自测，答错的会自动进来</span></div>';
+    }
+    order.forEach(function (id) {
+      var g = groups[id];
+      html += '<div class="chapter">' + g.name + ' · ' + g.items.length + ' 道</div>';
+      g.items.forEach(function (it) {
+        var sub = '复习 ' + (it.reviewCount || 0) + ' 次 · 错过 ' + (it.wrongCount || 0) + ' 次';
+        if (isMastered(it)) sub = '已记牢 · ' + sub;
+        html += '<div class="wb' + (isMastered(it) ? ' ok' : '') + '" data-act="wrm:' + encodeURIComponent(it.key) + '">' +
+          '<b>' + it.ask + ' → ' + it.answer + '</b><em>' + sub + '</em></div>';
+      });
+    });
+    html += '</div></div>';
+    return html;
+  }
+
   // ---------- 渲染 ----------
   function render() {
     var html = '';
@@ -477,6 +1086,10 @@
     else if (state.view === 'reader') html = readerView();
     else if (state.view === 'history') html = historyView();
     else if (state.view === 'settings') html = settingsView();
+    else if (state.view === 'quiz') html = quizView();
+    else if (state.view === 'wrongbook') html = wrongbookView();
+    else if (state.view === 'badges') html = badgesView();
+    else if (state.view === 'badge') html = badgeDetailView();
 
     view.innerHTML = html;
 
@@ -511,7 +1124,13 @@
   function handle(action) {
     if (action.indexOf('subject:') === 0) {
       state.file = action.slice(8);
+      state.chapter = -1;
       state.view = 'list';
+      render();
+      return;
+    }
+    if (action.indexOf('cat:') === 0) {
+      state.chapter = Number(action.slice(4));
       render();
       return;
     }
@@ -520,9 +1139,61 @@
       return;
     }
     if (action === 'continue') { openPoint(lastId()); return; }
+    if (action === 'flip') {
+      if (!state.cardFlip && !isChecked()) {
+        checkIn();
+        state.justChecked = true;
+        render();
+        return;
+      }
+      state.justChecked = false;
+      state.cardFlip = !state.cardFlip;
+      if (state.cardFlip) {
+        var s = streakState();
+        if (s.pending) { s.pending = 0; save('streak', s); }
+      }
+      render();
+      return;
+    }
+    if (action === 'badges') { state.revealDismissed = false; state.view = 'badges'; render(); return; }
+    if (action === 'btake') { var pend2 = load('badgePending', []); pend2.shift(); save('badgePending', pend2); state.revealDismissed = false; state.view = 'badges'; render(); return; }
+    if (action.indexOf('bopen:') === 0) { state.badgeId = decodeURIComponent(action.slice(6)); state.view = 'badge'; render(); return; }
+    if (action === 'quiz') { state.quiz = { mode: 'scope', count: 10 }; state.view = 'quiz'; render(); return; }
+    if (action === 'wrongbook') { state.view = 'wrongbook'; render(); return; }
+    if (action === 'qcount') {
+      var counts = [10, 20, 0];
+      var i = counts.indexOf(state.quiz.count);
+      state.quiz.count = counts[(i + 1) % counts.length];
+      render();
+      return;
+    }
+    if (action === 'qwrong') {
+      var items = wrongToReview();
+      if (!items.length) return;
+      startQuiz(items.map(function (it) {
+        return {
+          key: it.key, pointId: it.pointId, subjectId: it.subjectId, subjectName: it.subjectName,
+          chapterName: it.chapterName, ask: it.ask, answer: it.answer, fromWrong: true
+        };
+      }));
+      return;
+    }
+    if (action === 'qall') { startQuiz(shuffle(poolOfAll())); return; }
+    if (action.indexOf('qsubject:') === 0) { startQuiz(shuffle(poolOfFile(action.slice(9)))); return; }
+    if (action === 'qshow') { state.quiz.show = true; render(); return; }
+    if (action === 'qright') { judgeQuiz(true); return; }
+    if (action === 'qwrongans') { judgeQuiz(false); return; }
+    if (action === 'qagain') { state.quiz = { mode: 'scope', count: state.quiz ? state.quiz.count : 10 }; render(); return; }
+    if (action === 'qhome') { state.view = 'home'; state.quiz = null; render(); return; }
+    if (action.indexOf('wrm:') === 0) {
+      wrongRemove(decodeURIComponent(action.slice(4)));
+      render();
+      return;
+    }
     if (action === 'history') { state.view = 'history'; render(); return; }
     if (action === 'settings') { state.view = 'settings'; render(); return; }
     if (action === 'trans') { save('trans', !showTrans()); render(); return; }
+    if (action === 'color') { save('color', !showColor()); render(); return; }
     if (action === 'next' || action === 'prev') {
       var found = findPoint(state.pointId);
       if (!found) return;
@@ -533,15 +1204,49 @@
       return;
     }
     if (action === 'back') {
+      if (state.view === 'list' && state.chapter >= 0) {
+        state.chapter = -1;
+        render();
+        return;
+      }
       state.view = state.file ? 'list' : 'home';
       render();
     }
+  }
+
+  function startQuiz(questions) {
+    var count = state.quiz ? state.quiz.count : 10;
+    var picked = count > 0 ? questions.slice(0, count) : questions;
+    if (!picked.length) return;
+    state.quiz = { mode: 'ask', count: count, questions: picked, index: 0, show: false, right: 0, wrong: 0 };
+    render();
+  }
+
+  function judgeQuiz(correct) {
+    var q = state.quiz;
+    var cur = q.questions[q.index];
+    if (correct) {
+      q.right += 1;
+      if (cur.fromWrong) wrongReview(cur.key, true);
+    } else {
+      q.wrong += 1;
+      if (cur.fromWrong) wrongReview(cur.key, false);
+      else wrongAdd(cur);
+    }
+    q.index += 1;
+    if (q.index >= q.questions.length) {
+      q.mode = 'done';
+    } else {
+      q.show = false;
+    }
+    render();
   }
 
   function openPoint(id) {
     var found = findPoint(id);
     if (!found) return;
 
+    touchToday();
     save('last', id);
 
     var readMap = readIds();
@@ -584,9 +1289,14 @@
     var parts = hash.split('=');
     var kind = parts[0];
     var arg = parts[1] || '';
-    if (kind === 'list' && D.data[arg]) {
-      state.file = arg;
-      state.view = 'list';
+    if (kind === 'list' && arg) {
+      // 支持 #list=<file> 与 #list=<file>:<分类序号>
+      var seg = arg.split(':');
+      if (D.data[seg[0]]) {
+        state.file = seg[0];
+        state.chapter = seg.length > 1 ? Number(seg[1]) : -1;
+        state.view = 'list';
+      }
     } else if (kind === 'reader' && arg) {
       var seg = arg.split(':');
       if (D.data[seg[0]]) {
@@ -594,6 +1304,40 @@
         state.view = 'reader';
         state.pointId = pointIdOf(seg[0], Number(seg[1]) || 0);
       }
+    } else if (kind === 'quiz') {
+      state.quiz = { mode: 'scope', count: 10 };
+      state.view = 'quiz';
+    } else if (kind === 'quizask') {
+      // 深链直接开一局（方便试玩/截图）
+      state.quiz = { mode: 'scope', count: 10 };
+      state.view = 'quiz';
+      startQuiz(shuffle(poolOfAll()));
+    } else if (kind === 'wrongbook') {
+      state.view = 'wrongbook';
+    } else if (kind === 'badges') {
+      state.view = 'badges';
+    } else if (kind === 'badge') {
+      state.badgeId = decodeURIComponent(arg);
+      state.view = 'badge';
+    } else if (kind === 'seedbadges') {
+      // 预览用：给几个分类造点进度，方便看青铜/黄金/钻石三档
+      var rm = {};
+      var s0 = subject('subjects/chinese-j1.json');
+      s0.chapters[0].points.forEach(function (p, i) { rm[pointIdOf('subjects/chinese-j1.json', i)] = true; });
+      var m0 = subject('subjects/math-j1.json');
+      for (var i2 = 0; i2 < 7; i2 += 1) rm[pointIdOf('subjects/math-j1.json', i2)] = true;
+      var ph0 = subject('subjects/physics-j1.json');
+      for (var i3 = 0; i3 < 4; i3 += 1) rm[pointIdOf('subjects/physics-j1.json', i3)] = true;
+      save('read', rm);
+      state.view = 'badges';
+    } else if (kind === 'cardback') {
+      state.cardFlip = true;
+    } else if (kind === 'demo') {
+      // 调试/截图用：#demo=7:4 → 连续 7 天、今天已读 4 条
+      var seg2 = arg.split(':');
+      var days = Number(seg2[0]) || 0;
+      var todayCount2 = Number(seg2[1]) || 0;
+      save('streak', { streak: days, lastDate: dk(), todayDate: dk(), todayCount: todayCount2, milestones: [], pending: 0 });
     } else if (kind === 'history') {
       state.view = 'history';
     } else if (kind === 'settings') {
